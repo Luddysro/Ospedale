@@ -2,8 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package packagee;
+package Ospedale.Model;
 
+import Ospedale.Model.User.Patient;
+import Ospedale.Model.User.Doctor;
+import Ospedale.Controller.AppointmentStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
