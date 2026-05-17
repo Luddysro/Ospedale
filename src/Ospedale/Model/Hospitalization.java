@@ -7,7 +7,6 @@ package Ospedale.Model;
 import Ospedale.Model.RoomType;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.Doctor;
-import Ospedale.Controller.HospitalizationStatus;
 import java.time.LocalDate;
 
 /**

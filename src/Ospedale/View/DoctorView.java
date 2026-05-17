@@ -6,10 +6,10 @@ package Ospedale.View;
 
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.Appointment;
-import Ospedale.Controller.AppointmentStatus;
+import Ospedale.Model.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.Hospitalization;
-import Ospedale.Controller.HospitalizationStatus;
+import Ospedale.Model.HospitalizationStatus;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.Prescription;
 import Ospedale.Model.RoomType;

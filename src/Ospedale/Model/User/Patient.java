@@ -9,6 +9,7 @@ import Ospedale.Model.Hospitalization;
 import Ospedale.Model.User.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -24,6 +25,45 @@ public class Patient extends User {
     private ArrayList<Appointment> appointments;
     private Hospitalization hospitalization;
 
+       public Patient(long id, String username, String firstname, String lastname, String password, String email, LocalDate birthdate, boolean gender, long phone, String address) {
+        super(id, username, firstname, lastname, password);
+        this.email = email;
+        this.birthdate = birthdate;
+        this.gender = gender;
+        this.phone = phone;
+        this.address = address;
+        this.appointments = new ArrayList<>();
+    }
+
+    public Patient(long id, String username, String firstname, String lastname, String password) {
+        super(id, username, firstname, lastname, password);
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public boolean isGender() {
+        return gender;
+    }
+
+    public long getPhone() {
+        return phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public Hospitalization getHospitalization() {
+        return hospitalization;
+    }
+       
+    
     public void setEmail(String email) {
         this.email = email;
     }
@@ -56,14 +96,21 @@ public class Patient extends User {
         this.appointments.add(a);
     }
 
-    public Patient(long id, String username, String firstname, String lastname, String password, String email, LocalDate birthdate, boolean gender, long phone, String address) {
-        super(id, username, firstname, lastname, password);
-        this.email = email;
-        this.birthdate = birthdate;
-        this.gender = gender;
-        this.phone = phone;
-        this.address = address;
-        this.appointments = new ArrayList<>();
-    }
     
+@Override
+public HashMap<String, Object> serialize(){
+
+    HashMap<String, Object> data =
+            super.serialize();
+
+    data.put("email", getEmail());
+    data.put("birthdate", getBirthdate());
+    data.put("gender", isGender());
+    data.put("phone", getPhone());
+    data.put("address", getAddress());
+    data.put("appointments", getAppointments());
+
+    return data;
+}
+
 }

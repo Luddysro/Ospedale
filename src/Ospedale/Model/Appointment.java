@@ -6,7 +6,6 @@ package Ospedale.Model;
 
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.Doctor;
-import Ospedale.Controller.AppointmentStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
