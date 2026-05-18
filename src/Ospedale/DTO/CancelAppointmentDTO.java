@@ -9,6 +9,15 @@ package Ospedale.DTO;
  * @author luddy
  */
 public class CancelAppointmentDTO {
-    String appointmentId;
-    String observations;
+    private String appointmentId;
+    private String observations;
+
+    public String getAppointmentId() {
+        return appointmentId;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+    
 }

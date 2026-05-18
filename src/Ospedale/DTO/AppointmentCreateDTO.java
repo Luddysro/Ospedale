@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
  * @author luddy
  */
 public class AppointmentCreateDTO {
-    long patientId;
-    long doctorId;
-    LocalDateTime datetime;
-    String reason;
-    boolean type; 
+    private long patientId;
+    private long doctorId;
+    private LocalDateTime datetime;
+    private String reason;
+    private boolean type; 
 
     public long getPatientId() {
         return patientId;

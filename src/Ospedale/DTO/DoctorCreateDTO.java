@@ -11,12 +11,45 @@ import Ospedale.Model.Specialty;
  * @author luddy
  */
 public class DoctorCreateDTO {
-    long id;
-    String firstname;
-    String lastname;
-    String username;
-    String password;
-    Specialty specialty;
-    String licenseNumber;
-    String assignedOffice;
+    private long id;
+    private String firstname;
+    private String lastname;
+    private String username;
+    private String password;
+    private Specialty specialty;
+    private String licenseNumber;
+    private String assignedOffice;
+
+    public long getId() {
+        return id;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public Specialty getSpecialty() {
+        return specialty;
+    }
+
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+
+    public String getAssignedOffice() {
+        return assignedOffice;
+    }
+    
 }

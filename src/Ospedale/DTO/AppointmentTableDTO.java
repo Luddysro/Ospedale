@@ -9,10 +9,40 @@ package Ospedale.DTO;
  * @author luddy
  */
 public class AppointmentTableDTO {
-    String id;
-    String datetime;
-    String doctorName;
-    String specialty;
-    String type;
-    String status;
+
+    private String id;
+    private String datetime;
+    private String doctorName;
+    private String specialty;
+    private String type;
+    private String status;
+
+    public AppointmentTableDTO(String id, String datetime, String doctorName,
+                               String specialty, String type, String status) {
+        this.id = id;
+        this.datetime = datetime;
+        this.doctorName = doctorName;
+        this.specialty = specialty;
+        this.type = type;
+        this.status = status;
+    }
+
+    public String getId() { 
+        return id; 
+    }
+    public String getDatetime() {
+        return datetime; 
+    }
+    public String getDoctorName() { 
+        return doctorName; 
+    }
+    public String getSpecialty() { 
+        return specialty; 
+    }
+    public String getType() {
+        return type; 
+    }
+    public String getStatus() {
+        return status; 
+    }
 }

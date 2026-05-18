@@ -12,6 +12,7 @@ import Ospedale.Controller.Utils.Status;
 import Ospedale.DTO.AppointmentTableDTO;
 import Ospedale.DTO.AppointmentCreateDTO;
 import Ospedale.Model.Appointment;
+import Ospedale.Model.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.User;
@@ -35,36 +36,63 @@ public class AppointmentService {
         this.userRepo = userRepo;
     }
 
-    public Response createAppointment(AppointmentCreateDTO dto) {
+public Appointment createAppointment(AppointmentCreateDTO dto) {
 
-        Patient patient = userRepo.findPatientById(dto.getPatientId());
-        Doctor doctor = userRepo.findDoctorById(dto.getDoctorId());
+    Patient patient = userRepo.findPatientById(dto.getPatientId());
+    Doctor doctor = userRepo.findDoctorById(dto.getDoctorId());
 
-        if (patient == null)
-            return new Response("Patient not found", Status.NOT_FOUND);
-
-        if (doctor == null)
-            return new Response("Doctor not found", Status.NOT_FOUND);
-
-        String id = "APP-" + UUID.randomUUID();
-
-        Appointment app = new Appointment(
-            id,
-            patient,
-            doctor,
-            doctor.getSpecialty(),
-            dto.getDatetime(),
-            dto.getReason(),
-            dto.isType()
-        );
-
-        appointmentRepo.save(app);
-        patient.getAppointments().add(app);
-
-        return new Response("Appointment created", Status.CREATED);
+    if (patient == null) {
+        throw new RuntimeException("Patient not found");
     }
 
-    public List<AppointmentTableDTO> getByPatient(long patientId) {
-        return appointmentRepo.findByPatientId(patientId);
+    if (doctor == null) {
+        throw new RuntimeException("Doctor not found");
     }
+
+    String id = "APP-" + UUID.randomUUID();
+
+    Appointment app = new Appointment(
+        id,
+        patient,
+        doctor,
+        doctor.getSpecialty(),
+        dto.getDatetime(),
+        dto.getReason(),
+        dto.isType()
+    );
+
+    appointmentRepo.save(app);
+    patient.addAppointment(app);
+
+    return app;
+}
+public List<AppointmentTableDTO> getAppointmentsByPatient(long id) {
+
+List<Appointment> appointments = appointmentRepo.findByPatientId(id);
+
+    List<AppointmentTableDTO> dtos = new ArrayList<>();
+
+    for (Appointment a : appointments) {
+        dtos.add(new AppointmentTableDTO(
+            a.getId(),
+            a.getDatetime().toString(),
+            a.getDoctor().getFirstname() + " " + a.getDoctor().getLastname(),
+            a.getSpecialty().name(),
+            a.isType() ? "In-person" : "Remote",
+            a.getStatus().name()
+        ));
+    }
+
+    return dtos;
+}
+public void cancelAppointment(String idAppointment) {
+
+    Appointment ap = appointmentRepo.findById(idAppointment);
+
+    if (ap == null)
+        throw new RuntimeException("Appointment not found");
+
+    ap.setStatus(AppointmentStatus.CANCELED);
+}
+
 }

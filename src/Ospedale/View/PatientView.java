@@ -45,24 +45,27 @@ public class PatientView extends javax.swing.JFrame {
     private PatientController ptctrl;
     private DoctorController doctrl;
 
-    public PatientView(AppointmentController appctrl, DoctorController doctrl, HospitalizationController hospctrl, PatientController ptctrl) {
-        initComponents();
-        this.user = user;
-        this.response = response;
-        this.nav = nav;
-        this.appctrl = appctrl;
-        this.hospctrl = hospctrl;
-        this.ptctrl = ptctrl;
-        this.doctrl = doctrl;
-        if (user instanceof Administrator){
-             lblBack.setVisible(true);
-        } else {
-            lblBack.setVisible(false);
-        }
-        this.setBackground(new Color(0, 0, 0, 0));
-        this.setLocationRelativeTo(null);
-    }
-    
+public PatientView(User user,
+                   NavigationController nav,
+                   AppointmentController appctrl,
+                   DoctorController doctrl,
+                   HospitalizationController hospctrl,
+                   PatientController ptctrl) {
+
+    initComponents();
+
+    this.user = user;
+    this.nav = nav;
+    this.appctrl = appctrl;
+    this.doctrl = doctrl;
+    this.hospctrl = hospctrl;
+    this.ptctrl = ptctrl;
+
+    lblBack.setVisible(user instanceof Administrator);
+
+    this.setLocationRelativeTo(null);
+}
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

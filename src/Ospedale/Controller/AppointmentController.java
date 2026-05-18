@@ -7,11 +7,14 @@ package Ospedale.Controller;
 import Data.Storage;
 import Ospedale.Controller.Utils.Response;
 import Ospedale.Controller.Utils.Status;
+import Ospedale.DTO.AppointmentCreateDTO;
+import Ospedale.DTO.AppointmentTableDTO;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.User;
+import Ospedale.Services.AppointmentService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -24,49 +27,31 @@ import java.util.UUID;
  * @author luddy
  */
 public class AppointmentController {
-    private Storage storage;
+    
+   private AppointmentService appointmentService;
 
-    public AppointmentController(Storage storage) {
-        this.storage = storage;
+    public AppointmentController(AppointmentService appointmentService) {
+        this.appointmentService = appointmentService;
     }
     
-    public Response cancelAppointment(String idAppointment){
-        
-    for(Appointment ap: storage.getAppointments()){
-            if (ap.getId().equals(idAppointment)) {
-                ap.setStatus(AppointmentStatus.CANCELED);
-                return new Response("Appointment canceled successfully",Status.OK);
-            }
-        }
-    return new Response("Appointment not found", Status.NOT_FOUND);
+    public Response createAppointment(AppointmentCreateDTO dto) {
+    try {
+        Appointment app = appointmentService.createAppointment(dto);
+        return new Response("Appointment created: " + app.getId(), Status.CREATED);
+    } catch (RuntimeException e) {
+        return new Response(e.getMessage(), Status.NOT_FOUND);
     }
-
-    public List<Object[]> getPatientAppointments(long patientId) {
-
-    Patient patient = null;
-
-    for (User u : storage.getUsers()) {
-        if (u instanceof Patient && u.getId() == patientId) {
-            patient = (Patient) u;
-            break;
-        }
-    }
-
-    if (patient == null) return new ArrayList<>();
-
-    List<Object[]> rows = new ArrayList<>();
-
-    for (Appointment a : patient.getAppointments()) {
-        rows.add(new Object[]{
-            a.getId(),
-            a.getDatetime().toString(),
-            a.getDoctor().getFirstname() + " " + a.getDoctor().getLastname(),
-            a.getSpecialty().name(),
-            a.isType() ? "In-person" : "Remote",
-            a.getStatus().name()
-        });
-    }
-
-    return rows;
 }
+ public Response cancelAppointment(String idAppointment) {
+    try {
+        appointmentService.cancelAppointment(idAppointment);
+        return new Response("Appointment canceled successfully", Status.OK);
+    } catch (RuntimeException e) {
+        return new Response(e.getMessage(), Status.NOT_FOUND);
+    }
+}
+
+   public List<AppointmentTableDTO> getPatientAppointments(long patientId) {
+        return appointmentService.getAppointmentsByPatient(patientId);
+    }
 }

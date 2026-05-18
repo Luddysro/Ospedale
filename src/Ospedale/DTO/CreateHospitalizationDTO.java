@@ -12,10 +12,35 @@ import java.time.LocalDate;
  * @author luddy
  */
 public class CreateHospitalizationDTO {
-    long patientId;
-    long doctorId;
-    LocalDate estimatedAdmission;
-    String reason;
-    RoomType roomType;
-    String observations;
+    private long patientId;
+    private long doctorId;
+    private LocalDate estimatedAdmission;
+    private String reason;
+    private RoomType roomType;
+    private String observations;
+
+    public long getPatientId() {
+        return patientId;
+    }
+
+    public long getDoctorId() {
+        return doctorId;
+    }
+
+    public LocalDate getEstimatedAdmission() {
+        return estimatedAdmission;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public RoomType getRoomType() {
+        return roomType;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+    
 }

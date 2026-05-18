@@ -23,28 +23,26 @@ public class AppointmentRepo {
     public void save(Appointment a) {
         storage.getAppointments().add(a);
     }
+public List<Appointment> findByPatientId(long id) {
+    List<Appointment> list = new ArrayList<>();
 
-    public List<AppointmentTableDTO> findByPatientId(long id) {
-
-        List<AppointmentTableDTO> list = new ArrayList<>();
-
-        for (Appointment a : storage.getAppointments()) {
-
-            if (a.getPatient().getId() == id) {
-
-                AppointmentTableDTO dto = new AppointmentTableDTO(
-                    a.getId(),
-                    a.getDatetime().toString(),
-                    a.getDoctor().getFirstname() + " " + a.getDoctor().getLastname(),
-                    a.getSpecialty().name(),
-                    a.isType() ? "In-person" : "Remote",
-                    a.getStatus().name()
-                );
-
-                list.add(dto);
-            }
+    for (Appointment a : storage.getAppointments()) {
+        if (a.getPatient().getId() == id) {
+            list.add(a);
         }
-
-        return list;
     }
+
+    return list;
+}
+public List<Appointment> findAll() {
+    return new ArrayList<>(storage.getAppointments());
+}
+public Appointment findById(String id) {
+    for (Appointment a : storage.getAppointments()) {
+        if (a.getId().equals(id)) {
+            return a;
+        }
+    }
+    return null;
+}
 }

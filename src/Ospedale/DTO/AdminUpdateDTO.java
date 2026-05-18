@@ -8,16 +8,6 @@ package Ospedale.DTO;
  *
  * @author luddy
  */
-public class DoctorListDTO {
-    private long id;
-    private String fullName;
-
-    public long getId() {
-        return id;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
+public class AdminUpdateDTO {
     
 }
