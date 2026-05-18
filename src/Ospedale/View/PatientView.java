@@ -4,6 +4,11 @@
  */
 package Ospedale.View;
 
+import Ospedale.Controller.AppointmentController;
+import Ospedale.Controller.HospitalizationController;
+import Ospedale.Controller.PatientController;
+import Ospedale.Controller.UserController;
+import Ospedale.Controller.Utils.Response;
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.AppointmentStatus;
@@ -19,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -30,11 +36,31 @@ public class PatientView extends javax.swing.JFrame {
 
     private int x, y;
     private User user;
+    private Response response;
     private ArrayList<User> users;
     private Patient patient;
     private ArrayList<Appointment> appointments;
     private ArrayList<Hospitalization> hospitalizations;
+    private AppointmentController appctrl;
+    private HospitalizationController hospctrl;
+    private UserController userctrl;
+    private PatientController ptctrl;
 
+    public PatientView(AppointmentController appctrl, HospitalizationController hospctrl, UserController userctrl, PatientController ptctrl) {
+        initComponents();
+        this.appctrl = appctrl;
+        this.hospctrl = hospctrl;
+        this.userctrl = userctrl;
+        this.ptctrl = ptctrl;
+        if (user instanceof Administrator){
+             lblBack.setVisible(true);
+        } else {
+            lblBack.setVisible(false);
+        }
+        this.setBackground(new Color(0, 0, 0, 0));
+        this.setLocationRelativeTo(null);
+    }
+    
     public PatientView(User user,Patient patient, ArrayList<User> users, ArrayList<Appointment>appointments, ArrayList<Hospitalization> hospitalizations) {
         initComponents();
         this.user = user;
@@ -785,11 +811,8 @@ public class PatientView extends javax.swing.JFrame {
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         String idAppointment = cmbID.getItemAt(cmbID.getSelectedIndex());
-        for(Appointment ap: this.appointments){
-            if (ap.getId().equals(idAppointment)) {
-                ap.setStatus(AppointmentStatus.CANCELED);
-            }
-        }
+        appctrl.cancelAppointment(idAppointment);
+        JOptionPane.showMessageDialog(null, response.getMessage());
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
@@ -805,22 +828,7 @@ public class PatientView extends javax.swing.JFrame {
         String password = txtPassword.getText();
         String comPassword = txtPasswordConfirmation.getText();
         LocalDate birthdate = LocalDate.of(Integer.parseInt(birth.substring(0, 4)), Integer.parseInt(birth.substring(5, 7)), Integer.parseInt(birth.substring(8)));
-        if (comPassword.equals(password)) {
-            for (User user : this.users) {
-                if (user.getId() == this.user.getId() && user instanceof Patient) {
-                    Patient userTemp = (Patient) user;
-                    userTemp.setAddress(address);
-                    userTemp.setBirthdate(birthdate);
-                    userTemp.setEmail(email);
-                    userTemp.setFirstname(firstname);
-                    userTemp.setGender(gender);
-                    userTemp.setLastname(lastname);
-                    userTemp.setPassword(password);
-                    userTemp.setPhone(phone);
-                    userTemp.setUsername(username);
-                }
-            }
-        }
+        userctrl.updatePatient(user.getId(), firstname, lastname, gender, birthdate, address, phone, email, username, password, comPassword);
 
     }//GEN-LAST:event_btnSaveActionPerformed
 
@@ -856,11 +864,9 @@ public class PatientView extends javax.swing.JFrame {
         cmbTypeRequest.removeAllItems();
 
         cmbTypeRequest.addItem("Select one");
-        for (User doc : this.users) {
-            if (doc instanceof Doctor) {
+           for (Doctor doc : userctrl.getDoctors()) {
                 cmbTypeRequest.addItem(doc.getFirstname() + " " + doc.getLastname());
             }
-        }
     }//GEN-LAST:event_rdbDoctorActionPerformed
 
     private void btnCreateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAppointmentActionPerformed
@@ -870,14 +876,12 @@ public class PatientView extends javax.swing.JFrame {
         LocalDateTime Finally = LocalDateTime.of(appointmentDate, appointmentHour);
         String appointmentReason = txtAppointmentReason.getText();
         long docId = Long.parseLong(cmbTypeRequest.getItemAt(cmbTypeRequest.getSelectedIndex()));
-        Doctor doctor = null;
-        for(User use:this.users){
-            if (use.getId() == docId) {
-                doctor = (Doctor) use;
-            }
-        }
         boolean appointmentType = (cmbAppointmentType.getSelectedIndex() == 0 ? null : (cmbAppointmentType.getSelectedIndex() == 2 ));
-        this.appointments.add(new Appointment(appointDate, patient, doctor, doctor.getSpecialty(), Finally, appointDate, appointmentType));
+           Response response =
+            appctrl.createAppointment(patient.getId(),docId,appointmentDate, appointmentHour,
+            appointmentReason, appointmentType);
+
+    JOptionPane.showMessageDialog(null, response.getMessage());
     }//GEN-LAST:event_btnCreateAppointmentActionPerformed
 
 

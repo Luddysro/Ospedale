@@ -8,14 +8,22 @@
             <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/User/Patient.java</file>
             <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/View/Component/PanelRound.java</file>
             <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/View/DoctorView.java</file>
-            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/View/BaseView.java</file>
-            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/AppointmentStatus.java</file>
-            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/HospitalizationStatus.java</file>
             <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/Hospitalization.java</file>
-            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Controller/LoginController.java</file>
             <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/User/Administrator.java</file>
             <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/User/Doctor.java</file>
             <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/Appointment.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/View/AdminView.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Controller/PatientController.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/View/BaseView.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/Specialty.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/RoomType.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Model/Prescription.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Data/JSONLoader.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Controller/AppointmentController.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Controller/UserController.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Data/Storage.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Controller/DoctorController.java</file>
+            <file>file:/C:/Users/luddy/OneDrive/Documentos/GitHub/Ospedale/src/Ospedale/Controller/HospitalizationController.java</file>
         </group>
     </open-files>
 </project-private>
