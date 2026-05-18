@@ -4,11 +4,8 @@
  */
 package Ospedale.Controller;
 
-import Ospedale.Model.Appointment;
-import Ospedale.Model.Hospitalization;
 import Ospedale.Model.User.User;
 import Ospedale.View.AdminView;
-import java.util.ArrayList;
 import javax.swing.JFrame;
 
 /**
@@ -18,16 +15,28 @@ import javax.swing.JFrame;
 public class NavigationController {
 
     private User user;
+    private AppointmentController appctrl;
+    private HospitalizationController hospctrl;
+    private PatientController ptctrl;
+    private DoctorController doctrl;
 
-    public NavigationController(User user) {
+    public NavigationController(User user,
+                                AppointmentController appctrl,
+                                HospitalizationController hospctrl,
+                                PatientController ptctrl,
+                                DoctorController doctrl) {
         this.user = user;
+        this.appctrl = appctrl;
+        this.hospctrl = hospctrl;
+        this.ptctrl = ptctrl;
+        this.doctrl = doctrl;
     }
 
     public void openAdminView(JFrame current) {
 
         current.setVisible(false);
 
-        AdminView admin = new AdminView(user);
+        AdminView admin = new AdminView(user, appctrl, hospctrl, ptctrl, doctrl);
         admin.setVisible(true);
     }
 }

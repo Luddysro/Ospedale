@@ -5,18 +5,16 @@
 package Ospedale.Services;
 
 import Data.AppointmentRepo;
-import Data.Storage;
 import Data.UserRepository;
-import Ospedale.Controller.Utils.Response;
-import Ospedale.Controller.Utils.Status;
 import Ospedale.DTO.AppointmentTableDTO;
 import Ospedale.DTO.AppointmentCreateDTO;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
-import Ospedale.Model.User.User;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +37,7 @@ public class AppointmentService {
 public Appointment createAppointment(AppointmentCreateDTO dto) {
 
     Patient patient = userRepo.findPatientById(dto.getPatientId());
-    Doctor doctor = userRepo.findDoctorById(dto.getDoctorId());
+    Doctor doctor = userRepo.findDoctorById(parseId(dto.getDoctorId(), "Invalid doctor"));
 
     if (patient == null) {
         throw new RuntimeException("Patient not found");
@@ -56,9 +54,9 @@ public Appointment createAppointment(AppointmentCreateDTO dto) {
         patient,
         doctor,
         doctor.getSpecialty(),
-        dto.getDatetime(),
+        parseDateTime(dto.getDate(), dto.getTime()),
         dto.getReason(),
-        dto.isType()
+        parseType(dto.getType())
     );
 
     appointmentRepo.save(app);
@@ -93,6 +91,34 @@ public void cancelAppointment(String idAppointment) {
         throw new RuntimeException("Appointment not found");
 
     ap.setStatus(AppointmentStatus.CANCELED);
+}
+
+private long parseId(String value, String message) {
+    try {
+        return Long.parseLong(value);
+    } catch (RuntimeException e) {
+        throw new IllegalArgumentException(message);
+    }
+}
+
+private LocalDateTime parseDateTime(String date, String time) {
+    try {
+        return LocalDateTime.of(LocalDate.parse(date), LocalTime.parse(time));
+    } catch (RuntimeException e) {
+        throw new IllegalArgumentException("Invalid appointment date or time");
+    }
+}
+
+private boolean parseType(String type) {
+    if ("In-person".equals(type)) {
+        return true;
+    }
+
+    if ("Remote".equals(type)) {
+        return false;
+    }
+
+    throw new IllegalArgumentException("Invalid appointment type");
 }
 
 }

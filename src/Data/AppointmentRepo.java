@@ -23,6 +23,7 @@ public class AppointmentRepo {
     public void save(Appointment a) {
         storage.getAppointments().add(a);
     }
+
 public List<Appointment> findByPatientId(long id) {
     List<Appointment> list = new ArrayList<>();
 

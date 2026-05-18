@@ -4,11 +4,14 @@
  */
 package Ospedale.View;
 
+import Data.Storage;
 import Ospedale.Controller.AppointmentController;
 import Ospedale.Controller.DoctorController;
 import Ospedale.Controller.HospitalizationController;
+import Ospedale.Controller.NavigationController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Controller.Utils.Response;
+import Ospedale.DTO.DoctorListDTO;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.Hospitalization;
@@ -19,6 +22,7 @@ import Ospedale.View.PatientView;
 import Ospedale.View.BaseView;
 import java.awt.Color;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -32,6 +36,9 @@ public class AdminView extends javax.swing.JFrame {
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
     private DoctorController doctrl;
+    private ArrayList<User> users;
+    private ArrayList<Hospitalization> hospitalizations;
+    private ArrayList<Appointment> appointments;
 
     public AdminView(User user,
                      AppointmentController appctrl,
@@ -46,13 +53,41 @@ public class AdminView extends javax.swing.JFrame {
         this.hospctrl = hospctrl;
         this.ptctrl = ptctrl;
         this.doctrl = doctrl;
+        this.users = Storage.getInstance().getUsers();
+        this.hospitalizations = Storage.getInstance().getHospitalizations();
+        this.appointments = Storage.getInstance().getAppointments();
 
+        loadUserCombos();
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
     }
 
     public AdminView(User user) {
+        initComponents();
         this.user = user;
+        this.users = Storage.getInstance().getUsers();
+        this.hospitalizations = Storage.getInstance().getHospitalizations();
+        this.appointments = Storage.getInstance().getAppointments();
+        loadUserCombos();
+        this.setBackground(new Color(0, 0, 0, 0));
+        this.setLocationRelativeTo(null);
+    }
+
+    public AdminView(User user,
+                     ArrayList<User> users,
+                     ArrayList<Hospitalization> hospitalizations,
+                     ArrayList<Appointment> appointments) {
+
+        initComponents();
+
+        this.user = user;
+        this.users = users;
+        this.hospitalizations = hospitalizations;
+        this.appointments = appointments;
+
+        loadUserCombos();
+        this.setBackground(new Color(0, 0, 0, 0));
+        this.setLocationRelativeTo(null);
     }
     
 
@@ -479,17 +514,53 @@ public class AdminView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLogoutActionPerformed
 
     private void btnPatientViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPatientViewActionPerformed
-        long idPatient = Long.parseLong(cmbDoctor.getItemAt(cmbDoctor.getSelectedIndex()));
-        Patient temp = null;
-        for(User use:this.users){
-            if(use.getId() == idPatient)
-                temp =(Patient) user;
+        Patient selectedPatient = findSelectedPatient();
+
+        if (selectedPatient == null) {
+            JOptionPane.showMessageDialog(null, "Please select a patient");
+            return;
         }
-        PatientView patient = new PatientView(user,temp,users,appointments,hospitalizations);
+
+        NavigationController nav = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
+        PatientView patient = new PatientView(user, selectedPatient, nav, appctrl, doctrl, hospctrl, ptctrl);
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_btnPatientViewActionPerformed
 
+    private void loadUserCombos() {
+        cmbDoctor.removeAllItems();
+        cmbPatient.removeAllItems();
+        cmbDoctor.addItem("Select one");
+        cmbPatient.addItem("Select one");
+
+        if (doctrl != null) {
+            for (DoctorListDTO doctor : doctrl.getDoctorList()) {
+                cmbDoctor.addItem(doctor.toString());
+            }
+        }
+
+        for (User userItem : users) {
+            if (userItem instanceof Patient) {
+                cmbPatient.addItem(userItem.getId() + " - " + userItem.getFirstname() + " " + userItem.getLastname());
+            }
+        }
+    }
+
+    private Patient findSelectedPatient() {
+        if (cmbPatient.getSelectedIndex() <= 0) {
+            return null;
+        }
+
+        long id = Long.parseLong(cmbPatient.getItemAt(cmbPatient.getSelectedIndex()).split(" - ")[0]);
+
+        for (User userItem : users) {
+            if (userItem instanceof Patient && userItem.getId() == id) {
+                return (Patient) userItem;
+            }
+        }
+
+        return null;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDoctorView;

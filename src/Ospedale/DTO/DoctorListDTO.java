@@ -12,6 +12,11 @@ public class DoctorListDTO {
     private long id;
     private String fullName;
 
+    public DoctorListDTO(long id, String fullName) {
+        this.id = id;
+        this.fullName = fullName;
+    }
+
     public long getId() {
         return id;
     }
@@ -19,5 +24,9 @@ public class DoctorListDTO {
     public String getFullName() {
         return fullName;
     }
-    
+
+    @Override
+    public String toString() {
+        return id + " - " + fullName;
+    }
 }
