@@ -4,6 +4,11 @@
  */
 package Ospedale.View;
 
+import Ospedale.Controller.AppointmentController;
+import Ospedale.Controller.DoctorController;
+import Ospedale.Controller.HospitalizationController;
+import Ospedale.Controller.PatientController;
+import Ospedale.Controller.Utils.Response;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.Hospitalization;
@@ -22,20 +27,34 @@ import java.util.ArrayList;
  */
 public class AdminView extends javax.swing.JFrame {
 
-    private int x, y;
-    private ArrayList<User> users;
-    private ArrayList<Appointment>appointments;
-    private ArrayList<Hospitalization>hospitalizations;
-    private User user;
-    public AdminView(User user, ArrayList<User>users,ArrayList<Hospitalization> hospitalizations, ArrayList<Appointment> appointments) {
+   private User user;
+    private AppointmentController appctrl;
+    private HospitalizationController hospctrl;
+    private PatientController ptctrl;
+    private DoctorController doctrl;
+
+    public AdminView(User user,
+                     AppointmentController appctrl,
+                     HospitalizationController hospctrl,
+                     PatientController ptctrl,
+                     DoctorController doctrl) {
+
         initComponents();
+
         this.user = user;
-        this.users = users;
-        this.hospitalizations = hospitalizations;
-        this.appointments = appointments;
+        this.appctrl = appctrl;
+        this.hospctrl = hospctrl;
+        this.ptctrl = ptctrl;
+        this.doctrl = doctrl;
+
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
     }
+
+    public AdminView(User user) {
+        this.user = user;
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.

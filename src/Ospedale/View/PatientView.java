@@ -5,9 +5,10 @@
 package Ospedale.View;
 
 import Ospedale.Controller.AppointmentController;
+import Ospedale.Controller.DoctorController;
 import Ospedale.Controller.HospitalizationController;
+import Ospedale.Controller.NavigationController;
 import Ospedale.Controller.PatientController;
-import Ospedale.Controller.UserController;
 import Ospedale.Controller.Utils.Response;
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.Appointment;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -37,21 +39,21 @@ public class PatientView extends javax.swing.JFrame {
     private int x, y;
     private User user;
     private Response response;
-    private ArrayList<User> users;
-    private Patient patient;
-    private ArrayList<Appointment> appointments;
-    private ArrayList<Hospitalization> hospitalizations;
+    private NavigationController nav;
     private AppointmentController appctrl;
     private HospitalizationController hospctrl;
-    private UserController userctrl;
     private PatientController ptctrl;
+    private DoctorController doctrl;
 
-    public PatientView(AppointmentController appctrl, HospitalizationController hospctrl, UserController userctrl, PatientController ptctrl) {
+    public PatientView(AppointmentController appctrl, DoctorController doctrl, HospitalizationController hospctrl, PatientController ptctrl) {
         initComponents();
+        this.user = user;
+        this.response = response;
+        this.nav = nav;
         this.appctrl = appctrl;
         this.hospctrl = hospctrl;
-        this.userctrl = userctrl;
         this.ptctrl = ptctrl;
+        this.doctrl = doctrl;
         if (user instanceof Administrator){
              lblBack.setVisible(true);
         } else {
@@ -61,22 +63,6 @@ public class PatientView extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
     }
     
-    public PatientView(User user,Patient patient, ArrayList<User> users, ArrayList<Appointment>appointments, ArrayList<Hospitalization> hospitalizations) {
-        initComponents();
-        this.user = user;
-        this.users = users;
-        this.patient = patient;
-        this.hospitalizations = hospitalizations;
-        this.appointments = appointments;
-        if (user instanceof Administrator) {
-            lblBack.setVisible(true);
-        } else {
-            lblBack.setVisible(false);
-        }
-        this.setBackground(new Color(0, 0, 0, 0));
-        this.setLocationRelativeTo(null);
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -811,7 +797,7 @@ public class PatientView extends javax.swing.JFrame {
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         String idAppointment = cmbID.getItemAt(cmbID.getSelectedIndex());
-        appctrl.cancelAppointment(idAppointment);
+       Response response = appctrl.cancelAppointment(idAppointment);
         JOptionPane.showMessageDialog(null, response.getMessage());
     }//GEN-LAST:event_btnCancelActionPerformed
 
@@ -828,8 +814,8 @@ public class PatientView extends javax.swing.JFrame {
         String password = txtPassword.getText();
         String comPassword = txtPasswordConfirmation.getText();
         LocalDate birthdate = LocalDate.of(Integer.parseInt(birth.substring(0, 4)), Integer.parseInt(birth.substring(5, 7)), Integer.parseInt(birth.substring(8)));
-        userctrl.updatePatient(user.getId(), firstname, lastname, gender, birthdate, address, phone, email, username, password, comPassword);
-
+        Response response = ptctrl.updatePatient(user.getId(), firstname, lastname, gender, birthdate, address, phone, email, username, password, comPassword);
+        JOptionPane.showMessageDialog(null, response.getMessage());
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
@@ -839,9 +825,9 @@ public class PatientView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLogoutActionPerformed
 
     private void lblBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lblBackActionPerformed
-        AdminView admin = new AdminView(user, users,hospitalizations, appointments);
-        this.setVisible(false);
-        admin.setVisible(true);
+
+    nav.openAdminView(this);
+
     }//GEN-LAST:event_lblBackActionPerformed
 
     private void rdbSpecialtyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdbSpecialtyActionPerformed
@@ -861,56 +847,81 @@ public class PatientView extends javax.swing.JFrame {
         if (rdbSpecialty.isSelected()) {
             rdbSpecialty.setSelected(false);
         }
-        cmbTypeRequest.removeAllItems();
+       cmbTypeRequest.removeAllItems();
+cmbTypeRequest.addItem("Select one");
 
-        cmbTypeRequest.addItem("Select one");
-           for (Doctor doc : userctrl.getDoctors()) {
-                cmbTypeRequest.addItem(doc.getFirstname() + " " + doc.getLastname());
-            }
+for (String name : doctrl.getDoctorNames()) {
+    cmbTypeRequest.addItem(name);
+}
     }//GEN-LAST:event_rdbDoctorActionPerformed
 
     private void btnCreateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAppointmentActionPerformed
-        String appointDate = txtAppointmentDate.getText();
-        LocalDate appointmentDate = LocalDate.of(Integer.parseInt(appointDate.substring(0, 4)), Integer.parseInt(appointDate.substring(5, 7)), Integer.parseInt(appointDate.substring(8)));
-        LocalTime appointmentHour = LocalTime.of(Integer.parseInt(txtAppointmentTime.getText().substring(0, 2)), Integer.parseInt(txtAppointmentTime.getText().substring(3)));
-        LocalDateTime Finally = LocalDateTime.of(appointmentDate, appointmentHour);
-        String appointmentReason = txtAppointmentReason.getText();
-        long docId = Long.parseLong(cmbTypeRequest.getItemAt(cmbTypeRequest.getSelectedIndex()));
-        boolean appointmentType = (cmbAppointmentType.getSelectedIndex() == 0 ? null : (cmbAppointmentType.getSelectedIndex() == 2 ));
-           Response response =
-            appctrl.createAppointment(patient.getId(),docId,appointmentDate, appointmentHour,
-            appointmentReason, appointmentType);
+
+
+    AppointmentCreateDTO dto = new AppointmentCreateDTO();
+
+    dto.patientId = patient.getId();
+
+    dto.doctorId = Long.parseLong(
+        cmbTypeRequest.getItemAt(cmbTypeRequest.getSelectedIndex())
+    );
+
+    String date = txtAppointmentDate.getText();
+    LocalDate d = LocalDate.of(
+        Integer.parseInt(date.substring(0,4)),
+        Integer.parseInt(date.substring(5,7)),
+        Integer.parseInt(date.substring(8,10))
+    );
+
+    String time = txtAppointmentTime.getText();
+    LocalTime t = LocalTime.of(
+        Integer.parseInt(time.substring(0,2)),
+        Integer.parseInt(time.substring(3,5))
+    );
+
+    dto.datetime = LocalDateTime.of(d, t);
+
+    dto.reason = txtAppointmentReason.getText();
+
+    dto.type = cmbAppointmentType.getSelectedIndex() == 2;
+
+    Response response = appCtrl.createAppointment(dto);
 
     JOptionPane.showMessageDialog(null, response.getMessage());
+
     }//GEN-LAST:event_btnCreateAppointmentActionPerformed
 
 
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
-        // TODO add your handling code here:
-        Patient p = (Patient) user;
-        DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
-        model.setRowCount(0);
-        for (Appointment a : p.getAppointments()) {
-            model.addRow(new Object[]{a.getId(), a.getDatetime().toString(), a.getDoctor().getFirstname() + " " + a.getDoctor().getLastname(), a.getSpecialty().name(), a.isType() ? "In-person" : "Remote", a.getStatus().name()});
-        }
+
+
+    DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
+    model.setRowCount(0);
+
+    List<AppointmentTableDTO> list =
+            appCtrl.getPatientAppointments(patient.getId());
+
+    for (AppointmentTableDTO dto : list) {
+        model.addRow(new Object[]{
+            dto.id,
+            dto.datetime,
+            dto.doctorName,
+            dto.specialty,
+            dto.type,
+            dto.status
+        });
+    }
     }//GEN-LAST:event_btnRefreshActionPerformed
 
     private void btnCreateHospitalizationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateHospitalizationActionPerformed
         String hospitalizationReason = txtHospitalizationReason.getText();
         long idDoctor = Long.parseLong(cmbAttendingDoctor.getItemAt(cmbAttendingDoctor.getSelectedIndex()));
-        Doctor doc = null;
-        for(User use: this.users){
-            if (user.getId()  == idDoctor ){
-                doc = (Doctor) use;
-            }
-        }
         LocalDate stimateDate = LocalDate.of(Integer.parseInt(txtDateAdmission.getText().substring(0, 4)),Integer.parseInt(txtDateAdmission.getText().substring(5, 7)), Integer.parseInt(txtDateAdmission.getText().substring(8)));
-        
         RoomType desireRoom = RoomType.valueOf(cmbRoomType.getItemAt(cmbRoomType.getSelectedIndex()).toUpperCase());
         String observations = txtObservationsHospitalization.getText();
-        this.hospitalizations.add(new Hospitalization(observations, this.patient, doc, stimateDate, observations, desireRoom, observations));
+        Response response = hospctrl.createHospitalization(user.getId(),idDoctor, stimateDate, hospitalizationReason, desireRoom, observations);
+    JOptionPane.showMessageDialog(null, response.getMessage());
     }//GEN-LAST:event_btnCreateHospitalizationActionPerformed
-
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

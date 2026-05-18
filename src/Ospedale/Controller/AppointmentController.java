@@ -10,9 +10,14 @@ import Ospedale.Controller.Utils.Status;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
+import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.User;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -35,14 +40,33 @@ public class AppointmentController {
         }
     return new Response("Appointment not found", Status.NOT_FOUND);
     }
-    public Response createAppointment(long patientId, long doctorId, LocalDate appointmentDate, LocalTime appointTime, String appointDate, boolean appointmentType){
-        Doctor doctor = null;
-        for(User use: storage.getUsers()){
-            if (use.getId() == doctorId) {
-                doctor = (Doctor) use;
-            }
+
+    public List<Object[]> getPatientAppointments(long patientId) {
+
+    Patient patient = null;
+
+    for (User u : storage.getUsers()) {
+        if (u instanceof Patient && u.getId() == patientId) {
+            patient = (Patient) u;
+            break;
         }
-        storage.getAppointments().add(new Appointment(appointDate, patient, doctor, doctor.getSpecialty(), Finally, appointDate, appointmentType);
-        return new Response("Appointment created successfully", Status.OK);
+    }
+
+    if (patient == null) return new ArrayList<>();
+
+    List<Object[]> rows = new ArrayList<>();
+
+    for (Appointment a : patient.getAppointments()) {
+        rows.add(new Object[]{
+            a.getId(),
+            a.getDatetime().toString(),
+            a.getDoctor().getFirstname() + " " + a.getDoctor().getLastname(),
+            a.getSpecialty().name(),
+            a.isType() ? "In-person" : "Remote",
+            a.getStatus().name()
+        });
+    }
+
+    return rows;
 }
 }
