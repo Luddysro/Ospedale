@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * @author edangulo
  */
 public class AdminView extends javax.swing.JFrame {
-
+   private int x,y;
    private User user;
     private AppointmentController appctrl;
     private HospitalizationController hospctrl;
