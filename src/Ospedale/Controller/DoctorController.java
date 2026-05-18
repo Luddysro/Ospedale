@@ -5,6 +5,8 @@
 package Ospedale.Controller;
 
 import Data.Storage;
+import Ospedale.DTO.DoctorCreateDTO;
+import Ospedale.DTO.DoctorListDTO;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.User;
 import java.util.ArrayList;
@@ -22,25 +24,39 @@ public class DoctorController {
         this.storage = storage;
     }
 
-    public List<Doctor> getDoctors() {
+    public List<DoctorListDTO> getDoctors() {
 
-        List<Doctor> doctors = new ArrayList<>();
+        List<DoctorListDTO> doctors = new ArrayList<>();
 
         for (User user : storage.getUsers()) {
             if (user instanceof Doctor) {
-                doctors.add((Doctor) user);
+                Doctor doctor = (Doctor) user;
+                
+                DoctorCreateDTO dto=new DoctorCreateDTO(
+                doctor.getId(),
+                doctor.getFirstname(),
+                doctor.getLastname(),
+                doctor.getUsername(),
+                doctor.getPassword(),
+                
+                doctor.getSpecialty(),
+                doctor.getLicenceNumber(),
+                doctor.getAssignedOffice()
+                );
+                
+                
             }
         }
 
         return doctors;
     }
      public List<String> getDoctorNames() {
-    List<String> names = new ArrayList<>();
+    List<String> options = new ArrayList<>();
 
-    for (Doctor doc : getDoctors()) {
-        names.add(doc.getFirstname() + " " + doc.getLastname());
+    for (DoctorListDTO doc : getDoctors()) {
+        options.add(doc.getId() + " " + doc.getFullName());
     }
 
-    return names;
+    return options;
 }
 }
