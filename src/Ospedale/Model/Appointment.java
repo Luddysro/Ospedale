@@ -8,12 +8,13 @@ import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.Doctor;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
  * @author edangulo
  */
-public class Appointment {
+public class Appointment implements Serializable {
     
     private final String id;
     private Patient patient;
@@ -52,7 +53,9 @@ public class Appointment {
     public Appointment(String id, Patient patient, Doctor doctor, Specialty specialty, LocalDateTime datetime, String reason, boolean type) {
         this.id = id;
         this.patient = patient;
+        patient.addAppointment(this);
         this.doctor = doctor;
+        
         this.specialty = specialty;
         this.datetime = datetime;
         this.reason = reason;
@@ -95,6 +98,27 @@ public class Appointment {
 
     public boolean addPrescription(Prescription prescrip) {
         return this.prescriptions.add(prescrip);
+    }
+
+    @Override
+    public HashMap<String, Object> serialize() {
+       HashMap<String,Object> data =new HashMap<>();
+       
+       data.put("id",getId());
+       data.put("patientId",patient.getId());
+       data.put("DoctorId",doctor.getId());
+       data.put("specialty",specialty);
+       data.put("datetime",datetime);
+       data.put("reason",reason);
+       data.put("type",type);
+       data.put("status",status);
+       data.put("diagnosis",diagnosis);
+       data.put("observations",observations);
+       data.put("recommendedTreatment",recommendedTreatment);
+       data.put("followUp", followUp);
+
+       return data;
+    
     }
     
 }

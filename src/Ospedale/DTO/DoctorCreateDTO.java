@@ -30,8 +30,7 @@ public class DoctorCreateDTO {
         this.licenseNumber = licenseNumber;
         this.assignedOffice = assignedOffice;
     }
-    
-    
+
 
     public long getId() {
         return id;

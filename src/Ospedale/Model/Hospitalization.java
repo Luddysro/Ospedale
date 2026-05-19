@@ -8,12 +8,13 @@ import Ospedale.Model.RoomType;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.Doctor;
 import java.time.LocalDate;
+import java.util.HashMap;
 
 /**
  *
  * @author edangulo
  */
-public class Hospitalization {
+public class Hospitalization implements Serializable {
     
     private final String id;
     private Patient patient;
@@ -35,7 +36,7 @@ public class Hospitalization {
     public Hospitalization(String id, Patient patient, Doctor doctor, LocalDate date, String reason, RoomType roomType, String observations) {
         this.id = id;
         this.patient = patient;
-        patient.setHospitalization(this);
+        patient.addHospitalization(this);
         this.doctor = doctor;
         doctor.addHospitalization(this);
         this.date = date;
@@ -47,7 +48,7 @@ public class Hospitalization {
     public Hospitalization(String id, Patient patient, Doctor doctor, LocalDate date, String reason, RoomType roomType, String observations, HospitalizationStatus hopsS) {
         this.id = id;
         this.patient = patient;
-        patient.setHospitalization(this);
+        patient.addHospitalization(this);
         this.doctor = doctor;
         doctor.addHospitalization(this);
         this.date = date;
@@ -56,5 +57,29 @@ public class Hospitalization {
         this.observations = observations;
         this.status = hopsS;
     }
+
+    @Override
+    public HashMap<String, Object> serialize() {
+        HashMap<String,Object> data =new HashMap<>();
+        
+        
+        data.put("id", getId());
+        data.put("patientId", patient.getId());
+        data.put("doctorId", doctor.getId());
+        data.put("date", date);
+        data.put("reason", reason);
+        data.put("roomType", roomType);
+        data.put("observations", observations);
+        data.put("status", status);
+
+       return data;
+        
+        
+    
+    }
+    
+    
+    
+    
     
 }

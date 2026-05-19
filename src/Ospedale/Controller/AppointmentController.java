@@ -38,6 +38,8 @@ public class AppointmentController {
     try {
         Appointment app = appointmentService.createAppointment(dto);
         return new Response("Appointment created: " + app.getId(), Status.CREATED);
+    } catch (IllegalArgumentException e) {
+        return new Response(e.getMessage(), Status.BAD_REQUEST);
     } catch (RuntimeException e) {
         return new Response(e.getMessage(), Status.NOT_FOUND);
     }

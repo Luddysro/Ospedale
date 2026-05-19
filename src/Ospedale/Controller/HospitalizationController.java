@@ -4,45 +4,42 @@
  */
 package Ospedale.Controller;
 
+import Data.HospitalizationRepository;
 import Data.Storage;
+import Data.UserRepository;
 import Ospedale.Controller.Utils.Response;
 import Ospedale.Controller.Utils.Status;
-import Ospedale.Model.Appointment;
+import Ospedale.DTO.CreateHospitalizationDTO;
 import Ospedale.Model.Hospitalization;
-import Ospedale.Model.RoomType;
-import Ospedale.Model.User.Doctor;
-import Ospedale.Model.User.Patient;
-import Ospedale.Model.User.User;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import Ospedale.Services.HospitalizationService;
 
 /**
  *
  * @author luddy
  */
 public class HospitalizationController {
-    private Storage storage;
-    public HospitalizationController(Storage storage) {
-    this.storage = storage;
-}
-     public Response createHospitalization(long patientId, long doctorId, LocalDate appointmentTime, String appointmentReason, RoomType roomtype, String observations){
-        Doctor doctor = null;
-        Patient patient = null;
-        for(User user: storage.getUsers()){
-            if (user instanceof Patient && user.getId() == patientId) {
-            patient = (Patient) user;
-        } else if (user instanceof Doctor && user.getId() == doctorId) {
-                doctor = (Doctor) user;
-            }
-        }
-            if (patient == null) {
-        return new Response("Patient not found", Status.NOT_FOUND);
-    } else if (doctor == null) {
-        return new Response("Doctor not found", Status.NOT_FOUND);
+
+    private final HospitalizationService hospitalizationService;
+
+    public HospitalizationController(HospitalizationService hospitalizationService) {
+        this.hospitalizationService = hospitalizationService;
     }
-    String id = "HOSP-" + UUID.randomUUID();
-        storage.getHospitalizations().add(new Hospitalization(id, patient, doctor, appointmentTime, appointmentReason, roomtype, observations));
-        return new Response("Hospitalizaton created successfully", Status.CREATED);
-}
+
+    public HospitalizationController(Storage storage) {
+        this(new HospitalizationService(
+                new HospitalizationRepository(storage),
+                new UserRepository(storage)
+        ));
+    }
+
+    public Response createHospitalization(CreateHospitalizationDTO dto) {
+        try {
+            Hospitalization hospitalization = hospitalizationService.createHospitalization(dto);
+            return new Response("Hospitalization created: " + hospitalization.getId(), Status.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new Response(e.getMessage(), Status.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+    }
 }

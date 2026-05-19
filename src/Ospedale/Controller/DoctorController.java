@@ -5,10 +5,20 @@
 package Ospedale.Controller;
 
 import Data.Storage;
+import Ospedale.Services.DoctorService;
+
 import Ospedale.DTO.DoctorCreateDTO;
 import Ospedale.DTO.DoctorListDTO;
+
+import Data.UserRepository;
+import Ospedale.Controller.Utils.Response;
+import Ospedale.Controller.Utils.Status;
+import Ospedale.DTO.DoctorListDTO;
+import Ospedale.DTO.DoctorUpdateDTO;
+
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.User;
+import Ospedale.Services.DoctorService;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +28,17 @@ import java.util.List;
  */
 public class DoctorController {
 
+    private final DoctorService doctorService;
     private Storage storage;
+    
+    public DoctorController(DoctorService doctorService) {
+        this.doctorService = doctorService;
+    }
 
     public DoctorController(Storage storage) {
-        this.storage = storage;
+        this(new DoctorService(new UserRepository(storage)));
     }
+
 
     public List<DoctorListDTO> getDoctors() {
 
@@ -59,4 +75,21 @@ public class DoctorController {
 
     return options;
 }
+
+    public Response updateDoctor(DoctorUpdateDTO dto){
+     try {
+            doctorService.updateDoctor(dto);
+            return new Response("Doctor updated", Status.OK);
+        } catch (IllegalArgumentException e) {
+            return new Response("Passwords don't match", Status.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+}
+    
+
+    public List<DoctorListDTO> getDoctorList() {
+        return doctorService.getDoctorList();
+    }
+
 }

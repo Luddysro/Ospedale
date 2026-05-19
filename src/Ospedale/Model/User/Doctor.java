@@ -29,6 +29,7 @@ public class Doctor extends User {
         this.specialty = specialty;
         this.licenceNumber = licenceNumber;
         this.assignedOffice = assignedOffice;
+        this.appointments = new ArrayList<>();
     }
 
     public Doctor(long id, String username, String firstname, String lastname, String password) {

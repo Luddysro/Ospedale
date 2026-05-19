@@ -4,14 +4,13 @@
  */
 package Ospedale.View;
 
+import Data.Storage;
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.Hospitalization;
 import Ospedale.Model.User.User;
 import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Color;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import javax.swing.UIManager;
 
@@ -23,6 +22,7 @@ import javax.swing.UIManager;
 public class BaseView extends javax.swing.JFrame {
 
     private int x, y;
+    private Storage storage;
     private ArrayList<User> users;
     private ArrayList<Hospitalization> hospitalizations;
     private ArrayList<Appointment> appointments;
@@ -32,8 +32,14 @@ public class BaseView extends javax.swing.JFrame {
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
 
-        this.users = new ArrayList<>();
-        this.users.add(new Administrator(0, "admin", "admin", "adnim", "admin123"));
+        this.storage = Storage.getInstance();
+        this.users = storage.getUsers();
+        this.hospitalizations = storage.getHospitalizations();
+        this.appointments = storage.getAppointments();
+
+        if (this.users.isEmpty()) {
+            this.users.add(new Administrator(0, "admin", "admin", "adnim", "admin123"));
+        }
     }
 
     /**

@@ -4,30 +4,41 @@
  */
 package Ospedale.DTO;
 
-import Ospedale.Model.RoomType;
-import java.time.LocalDate;
-
 /**
  *
  * @author luddy
  */
 public class CreateHospitalizationDTO {
     private long patientId;
-    private long doctorId;
-    private LocalDate estimatedAdmission;
+    private String doctorId;
+    private String estimatedAdmission;
     private String reason;
-    private RoomType roomType;
+    private String roomType;
     private String observations;
+
+    public CreateHospitalizationDTO(long patientId,
+                                    String doctorId,
+                                    String estimatedAdmission,
+                                    String reason,
+                                    String roomType,
+                                    String observations) {
+        this.patientId = patientId;
+        this.doctorId = doctorId;
+        this.estimatedAdmission = estimatedAdmission;
+        this.reason = reason;
+        this.roomType = roomType;
+        this.observations = observations;
+    }
 
     public long getPatientId() {
         return patientId;
     }
 
-    public long getDoctorId() {
+    public String getDoctorId() {
         return doctorId;
     }
 
-    public LocalDate getEstimatedAdmission() {
+    public String getEstimatedAdmission() {
         return estimatedAdmission;
     }
 
@@ -35,12 +46,11 @@ public class CreateHospitalizationDTO {
         return reason;
     }
 
-    public RoomType getRoomType() {
+    public String getRoomType() {
         return roomType;
     }
 
     public String getObservations() {
         return observations;
     }
-    
 }

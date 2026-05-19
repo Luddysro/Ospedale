@@ -12,6 +12,11 @@ public class CancelAppointmentDTO {
     private String appointmentId;
     private String observations;
 
+    public CancelAppointmentDTO(String appointmentId, String observations) {
+        this.appointmentId = appointmentId;
+        this.observations = observations;
+    }
+
     public String getAppointmentId() {
         return appointmentId;
     }

@@ -7,6 +7,8 @@ package Data;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.User;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -36,5 +38,17 @@ public class UserRepository {
             }
         }
         return null;
+    }
+
+    public List<Doctor> findDoctors() {
+        List<Doctor> doctors = new ArrayList<>();
+
+        for (User u : storage.getUsers()) {
+            if (u instanceof Doctor) {
+                doctors.add((Doctor) u);
+            }
+        }
+
+        return doctors;
     }
 }

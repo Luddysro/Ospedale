@@ -23,7 +23,8 @@ public class Patient extends User {
     private long phone;
     private String address;
     private ArrayList<Appointment> appointments;
-    private Hospitalization hospitalization;
+    
+    private ArrayList<Hospitalization> hospitalizations;
 
        public Patient(long id, String username, String firstname, String lastname, String password, String email, LocalDate birthdate, boolean gender, long phone, String address) {
         super(id, username, firstname, lastname, password);
@@ -33,10 +34,13 @@ public class Patient extends User {
         this.phone = phone;
         this.address = address;
         this.appointments = new ArrayList<>();
+        this.hospitalizations = new ArrayList<>();
     }
 
     public Patient(long id, String username, String firstname, String lastname, String password) {
         super(id, username, firstname, lastname, password);
+        this.appointments = new ArrayList<>();
+        this.hospitalizations = new ArrayList<>();
     }
 
     public String getEmail() {
@@ -59,8 +63,9 @@ public class Patient extends User {
         return address;
     }
 
-    public Hospitalization getHospitalization() {
-        return hospitalization;
+    
+    public ArrayList<Hospitalization> getHospitalizations() {
+        return new ArrayList<>(hospitalizations);
     }
        
     
@@ -84,12 +89,12 @@ public class Patient extends User {
         this.address = address;
     }
 
-    public void setHospitalization(Hospitalization hospitalization) {
-        this.hospitalization = hospitalization;
+    public boolean addHospitalization(Hospitalization hospitalization) {
+        return this.hospitalizations.add(hospitalization);
     }
 
     public ArrayList<Appointment> getAppointments() {
-        return appointments;
+        return new ArrayList<>(appointments);
     }
     
     public void addAppointment(Appointment a) {
@@ -108,7 +113,17 @@ public HashMap<String, Object> serialize(){
     data.put("gender", isGender());
     data.put("phone", getPhone());
     data.put("address", getAddress());
-    data.put("appointments", getAppointments());
+    ArrayList<HashMap<String,Object>> serializedAppointments = new ArrayList<>();
+    for(Appointment appointment : appointments){
+        serializedAppointments.add(appointment.serialize());
+    }
+    data.put("appointments", serializedAppointments);
+    
+    ArrayList<HashMap<String,Object>> serializedHospitalizations = new ArrayList<>();
+    for(Hospitalization hospitalization : hospitalizations){
+        serializedHospitalizations.add(hospitalization.serialize());
+    }
+    data.put("hospitalizations", serializedHospitalizations);
 
     return data;
 }

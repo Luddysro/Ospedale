@@ -10,6 +10,11 @@ import Ospedale.Controller.HospitalizationController;
 import Ospedale.Controller.NavigationController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Controller.Utils.Response;
+import Ospedale.DTO.AppointmentCreateDTO;
+import Ospedale.DTO.AppointmentTableDTO;
+import Ospedale.DTO.CreateHospitalizationDTO;
+import Ospedale.DTO.DoctorListDTO;
+import Ospedale.DTO.PatientUpdateDTO;
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.AppointmentStatus;
@@ -21,9 +26,6 @@ import Ospedale.Model.Specialty;
 import Ospedale.Model.User.User;
 import Ospedale.View.BaseView;
 import java.awt.Color;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -37,31 +39,36 @@ import javax.swing.table.DefaultTableModel;
 public class PatientView extends javax.swing.JFrame {
 
     private int x, y;
-    private User user;
-    private Response response;
+    private User currentUser;
+    private Patient selectedPatient;
     private NavigationController nav;
     private AppointmentController appctrl;
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
     private DoctorController doctrl;
 
-public PatientView(User user,
-                   NavigationController nav,
-                   AppointmentController appctrl,
-                   DoctorController doctrl,
-                   HospitalizationController hospctrl,
-                   PatientController ptctrl) {
+public PatientView(User user, NavigationController nav, AppointmentController appctrl, DoctorController doctrl,
+HospitalizationController hospctrl, PatientController ptctrl) {
+
+    this(user, user instanceof Patient ? (Patient) user : null, nav, appctrl, doctrl, hospctrl, ptctrl);
+}
+
+public PatientView(User currentUser, Patient selectedPatient, NavigationController nav,
+AppointmentController appctrl, DoctorController doctrl, HospitalizationController hospctrl,
+PatientController ptctrl) {
 
     initComponents();
 
-    this.user = user;
+    this.currentUser = currentUser;
+    this.selectedPatient = selectedPatient;
     this.nav = nav;
     this.appctrl = appctrl;
     this.doctrl = doctrl;
     this.hospctrl = hospctrl;
     this.ptctrl = ptctrl;
 
-    lblBack.setVisible(user instanceof Administrator);
+    lblBack.setVisible(currentUser instanceof Administrator);
+    loadInitialData();
 
     this.setLocationRelativeTo(null);
 }
@@ -800,25 +807,28 @@ public PatientView(User user,
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         String idAppointment = cmbID.getItemAt(cmbID.getSelectedIndex());
-       Response response = appctrl.cancelAppointment(idAppointment);
+        Response response = appctrl.cancelAppointment(idAppointment);
         JOptionPane.showMessageDialog(null, response.getMessage());
+
+        if (response.isSuccess()) {
+            loadAppointments();
+            loadAppointmentIds();
+        }
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-      
-        String firstname = txtFirstName.getText();
-        String lastname = txtLastName.getText();
-        boolean gender = (cmbGender.getSelectedIndex() == 0 ? null : (cmbGender.getSelectedIndex() == 1));
-        String birth = txtBirthdate.getText();
-        String address = txtAddress.getText();
-        long phone = Long.parseLong(txtPhone.getText());
-        String email = txtEmail.getText();
-        String username = txtUser.getText();
-        String password = txtPassword.getText();
-        String comPassword = txtPasswordConfirmation.getText();
-        LocalDate birthdate = LocalDate.of(Integer.parseInt(birth.substring(0, 4)), Integer.parseInt(birth.substring(5, 7)), Integer.parseInt(birth.substring(8)));
-        Response response = ptctrl.updatePatient(user.getId(), firstname, lastname, gender, birthdate, address, phone, email, username, password, comPassword);
-        JOptionPane.showMessageDialog(null, response.getMessage());
+        try {
+            PatientUpdateDTO dto = buildPatientUpdateDTO();
+            Response response = ptctrl.updatePatient(dto);
+            JOptionPane.showMessageDialog(null, response.getMessage());
+
+            if (response.isSuccess()) {
+                clearPasswordFields();
+                loadPatientInfo();
+            }
+        } catch (RuntimeException e) {
+            JOptionPane.showMessageDialog(null, "Please check the patient information");
+        }
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
@@ -853,79 +863,194 @@ public PatientView(User user,
        cmbTypeRequest.removeAllItems();
 cmbTypeRequest.addItem("Select one");
 
-for (String name : doctrl.getDoctorNames()) {
-    cmbTypeRequest.addItem(name);
+for (DoctorListDTO doctor : doctrl.getDoctorList()) {
+    cmbTypeRequest.addItem(doctor.toString());
 }
     }//GEN-LAST:event_rdbDoctorActionPerformed
 
     private void btnCreateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAppointmentActionPerformed
 
+    try {
+        AppointmentCreateDTO dto = buildAppointmentCreateDTO();
+        Response response = appctrl.createAppointment(dto);
+        JOptionPane.showMessageDialog(null, response.getMessage());
 
-    AppointmentCreateDTO dto = new AppointmentCreateDTO();
-
-    dto.patientId = patient.getId();
-
-    dto.doctorId = Long.parseLong(
-        cmbTypeRequest.getItemAt(cmbTypeRequest.getSelectedIndex())
-    );
-
-    String date = txtAppointmentDate.getText();
-    LocalDate d = LocalDate.of(
-        Integer.parseInt(date.substring(0,4)),
-        Integer.parseInt(date.substring(5,7)),
-        Integer.parseInt(date.substring(8,10))
-    );
-
-    String time = txtAppointmentTime.getText();
-    LocalTime t = LocalTime.of(
-        Integer.parseInt(time.substring(0,2)),
-        Integer.parseInt(time.substring(3,5))
-    );
-
-    dto.datetime = LocalDateTime.of(d, t);
-
-    dto.reason = txtAppointmentReason.getText();
-
-    dto.type = cmbAppointmentType.getSelectedIndex() == 2;
-
-    Response response = appCtrl.createAppointment(dto);
-
-    JOptionPane.showMessageDialog(null, response.getMessage());
+        if (response.isSuccess()) {
+            clearAppointmentFields();
+            loadAppointments();
+            loadAppointmentIds();
+        }
+    } catch (RuntimeException e) {
+        JOptionPane.showMessageDialog(null, "Please check the appointment information");
+    }
 
     }//GEN-LAST:event_btnCreateAppointmentActionPerformed
 
 
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
 
-
-    DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
-    model.setRowCount(0);
-
-    List<AppointmentTableDTO> list =
-            appCtrl.getPatientAppointments(patient.getId());
-
-    for (AppointmentTableDTO dto : list) {
-        model.addRow(new Object[]{
-            dto.id,
-            dto.datetime,
-            dto.doctorName,
-            dto.specialty,
-            dto.type,
-            dto.status
-        });
-    }
+    loadAppointments();
+    loadAppointmentIds();
     }//GEN-LAST:event_btnRefreshActionPerformed
 
     private void btnCreateHospitalizationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateHospitalizationActionPerformed
-        String hospitalizationReason = txtHospitalizationReason.getText();
-        long idDoctor = Long.parseLong(cmbAttendingDoctor.getItemAt(cmbAttendingDoctor.getSelectedIndex()));
-        LocalDate stimateDate = LocalDate.of(Integer.parseInt(txtDateAdmission.getText().substring(0, 4)),Integer.parseInt(txtDateAdmission.getText().substring(5, 7)), Integer.parseInt(txtDateAdmission.getText().substring(8)));
-        RoomType desireRoom = RoomType.valueOf(cmbRoomType.getItemAt(cmbRoomType.getSelectedIndex()).toUpperCase());
-        String observations = txtObservationsHospitalization.getText();
-        Response response = hospctrl.createHospitalization(user.getId(),idDoctor, stimateDate, hospitalizationReason, desireRoom, observations);
-    JOptionPane.showMessageDialog(null, response.getMessage());
+        try {
+            String hospitalizationReason = txtHospitalizationReason.getText();
+            String observations = txtObservationsHospitalization.getText();
+            CreateHospitalizationDTO dto = new CreateHospitalizationDTO(
+                    selectedPatient.getId(),
+                    extractComboId(cmbAttendingDoctor.getItemAt(cmbAttendingDoctor.getSelectedIndex())),
+                    txtDateAdmission.getText(),
+                    hospitalizationReason,
+                    cmbRoomType.getItemAt(cmbRoomType.getSelectedIndex()),
+                    observations
+            );
+            Response response = hospctrl.createHospitalization(dto);
+            JOptionPane.showMessageDialog(null, response.getMessage());
+
+            if (response.isSuccess()) {
+                clearHospitalizationFields();
+            }
+        } catch (RuntimeException e) {
+            JOptionPane.showMessageDialog(null, "Please check the hospitalization information");
+        }
     }//GEN-LAST:event_btnCreateHospitalizationActionPerformed
 
+    private void loadInitialData() {
+        loadPatientInfo();
+        loadDoctors();
+        loadRoomTypes();
+        loadAppointments();
+        loadAppointmentIds();
+    }
+
+    private void loadPatientInfo() {
+        if (selectedPatient == null) {
+            return;
+        }
+
+        txtFirstName.setText(nullToEmpty(selectedPatient.getFirstname()));
+        txtLastName.setText(nullToEmpty(selectedPatient.getLastname()));
+        txtBirthdate.setText(selectedPatient.getBirthdate() == null ? "" : selectedPatient.getBirthdate().toString());
+        cmbGender.setSelectedIndex(selectedPatient.isGender() ? 1 : 2);
+        txtEmail.setText(nullToEmpty(selectedPatient.getEmail()));
+        txtPhone.setText(selectedPatient.getPhone() == 0 ? "" : String.valueOf(selectedPatient.getPhone()));
+        txtAddress.setText(nullToEmpty(selectedPatient.getAddress()));
+        txtUser.setText(nullToEmpty(selectedPatient.getUsername()));
+        clearPasswordFields();
+    }
+
+    private void loadDoctors() {
+        cmbAttendingDoctor.removeAllItems();
+        cmbAttendingDoctor.addItem("Select one");
+
+        for (DoctorListDTO doctor : doctrl.getDoctorList()) {
+            cmbAttendingDoctor.addItem(doctor.toString());
+        }
+    }
+
+    private void loadRoomTypes() {
+        cmbRoomType.removeAllItems();
+        cmbRoomType.addItem("Select one");
+
+        for (RoomType roomType : RoomType.values()) {
+            cmbRoomType.addItem(roomType.name());
+        }
+    }
+
+    private void loadAppointments() {
+        DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
+        model.setRowCount(0);
+
+        if (selectedPatient == null) {
+            return;
+        }
+
+        List<AppointmentTableDTO> list = appctrl.getPatientAppointments(selectedPatient.getId());
+
+        for (AppointmentTableDTO dto : list) {
+            model.addRow(new Object[]{
+                dto.getId(),
+                dto.getDatetime(),
+                dto.getDoctorName(),
+                dto.getSpecialty(),
+                dto.getType(),
+                dto.getStatus()
+            });
+        }
+    }
+
+    private void loadAppointmentIds() {
+        cmbID.removeAllItems();
+        cmbID.addItem("Select one");
+
+        if (selectedPatient == null) {
+            return;
+        }
+
+        List<AppointmentTableDTO> list = appctrl.getPatientAppointments(selectedPatient.getId());
+
+        for (AppointmentTableDTO dto : list) {
+            cmbID.addItem(dto.getId());
+        }
+    }
+
+    private PatientUpdateDTO buildPatientUpdateDTO() {
+        return new PatientUpdateDTO(
+                selectedPatient.getId(),
+                txtFirstName.getText(),
+                txtLastName.getText(),
+                cmbGender.getItemAt(cmbGender.getSelectedIndex()),
+                txtBirthdate.getText(),
+                txtAddress.getText(),
+                txtPhone.getText(),
+                txtEmail.getText(),
+                txtUser.getText(),
+                txtPassword.getText(),
+                txtPasswordConfirmation.getText()
+        );
+    }
+
+    private AppointmentCreateDTO buildAppointmentCreateDTO() {
+        return new AppointmentCreateDTO(
+                selectedPatient.getId(),
+                extractComboId(cmbTypeRequest.getItemAt(cmbTypeRequest.getSelectedIndex())),
+                txtAppointmentDate.getText(),
+                txtAppointmentTime.getText(),
+                txtAppointmentReason.getText(),
+                cmbAppointmentType.getItemAt(cmbAppointmentType.getSelectedIndex())
+        );
+    }
+
+    private String extractComboId(String value) {
+        int separator = value.indexOf(" - ");
+        return separator < 0 ? value : value.substring(0, separator);
+    }
+
+    private String nullToEmpty(String value) {
+        return value == null ? "" : value;
+    }
+
+    private void clearPasswordFields() {
+        txtPassword.setText("");
+        txtPasswordConfirmation.setText("");
+    }
+
+    private void clearAppointmentFields() {
+        cmbTypeRequest.setSelectedIndex(0);
+        txtAppointmentDate.setText("");
+        txtAppointmentTime.setText("");
+        txtAppointmentReason.setText("");
+        cmbAppointmentType.setSelectedIndex(0);
+    }
+
+    private void clearHospitalizationFields() {
+        txtHospitalizationReason.setText("");
+        cmbAttendingDoctor.setSelectedIndex(0);
+        txtDateAdmission.setText("");
+        cmbRoomType.setSelectedIndex(0);
+        txtObservationsHospitalization.setText("");
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
