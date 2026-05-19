@@ -6,6 +6,8 @@ package Ospedale.Services;
 
 import Data.UserRepository;
 import Ospedale.DTO.DoctorListDTO;
+import Ospedale.DTO.DoctorUpdateDTO;
+import Ospedale.Model.Specialty;
 import Ospedale.Model.User.Doctor;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,4 +40,41 @@ public class DoctorService {
 
         return doctors;
     }
+    public Doctor updateDoctor(DoctorUpdateDTO dto){
+           if (!dto.getPassword().equals(dto.getPasswordconfirmation())) {
+            throw new IllegalArgumentException("Passwords don't match");
+        }
+
+        Doctor doctor = userRepo.findDoctorById(dto.getId());
+
+        if (doctor == null) {
+            throw new RuntimeException("Patient not found");
+        }
+
+        doctor.setFirstname(dto.getFirstname());
+        doctor.setLastname(dto.getLastname());
+        doctor.setAssignedOffice(dto.getAssignedOffice());
+        doctor.setLicenceNumber(dto.getLicenceNumber());
+        doctor.setSpecialty(parseSpecialty(dto.getSpecialty())); 
+        doctor.setUsername(dto.getUsername());
+        doctor.setPassword(dto.getPassword());
+
+        return doctor;
+    }
+    private Specialty parseSpecialty(String specialty) {
+
+    if (specialty == null || specialty.isBlank()) {
+        return null;
+    }
+
+    try {
+        return Specialty.valueOf(
+                specialty.trim().toUpperCase()
+        );
+    } catch (IllegalArgumentException e) {
+        throw new RuntimeException(
+                "Invalid specialty: " + specialty
+        );
+    }
+}
 }

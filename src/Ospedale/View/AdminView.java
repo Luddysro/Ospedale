@@ -5,18 +5,21 @@
 package Ospedale.View;
 
 import Data.Storage;
+import Ospedale.Controller.AdminController;
 import Ospedale.Controller.AppointmentController;
 import Ospedale.Controller.DoctorController;
 import Ospedale.Controller.HospitalizationController;
 import Ospedale.Controller.NavigationController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Controller.Utils.Response;
+import Ospedale.DTO.AdminUpdateDTO;
 import Ospedale.DTO.DoctorListDTO;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.Hospitalization;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.Specialty;
+import Ospedale.Model.User.Administrator;
 import Ospedale.Model.User.User;
 import Ospedale.View.PatientView;
 import Ospedale.View.BaseView;
@@ -36,60 +39,32 @@ public class AdminView extends javax.swing.JFrame {
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
     private DoctorController doctrl;
-    private ArrayList<User> users;
-    private ArrayList<Hospitalization> hospitalizations;
-    private ArrayList<Appointment> appointments;
+    private AdminController adctrl;
 
-    public AdminView(User user,
+    public AdminView(User user,AdminController adctrl,
                      AppointmentController appctrl,
                      HospitalizationController hospctrl,
                      PatientController ptctrl,
                      DoctorController doctrl) {
 
         initComponents();
-
+        
         this.user = user;
+        this.adctrl = adctrl;
         this.appctrl = appctrl;
         this.hospctrl = hospctrl;
         this.ptctrl = ptctrl;
         this.doctrl = doctrl;
-        this.users = Storage.getInstance().getUsers();
-        this.hospitalizations = Storage.getInstance().getHospitalizations();
-        this.appointments = Storage.getInstance().getAppointments();
-
         loadUserCombos();
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
     }
+public AdminView(User user, AdminController adctrl, NavigationController nav, AppointmentController appctrl, DoctorController doctrl,
+HospitalizationController hospctrl, PatientController ptctrl) {
 
-    public AdminView(User user) {
-        initComponents();
-        this.user = user;
-        this.users = Storage.getInstance().getUsers();
-        this.hospitalizations = Storage.getInstance().getHospitalizations();
-        this.appointments = Storage.getInstance().getAppointments();
-        loadUserCombos();
-        this.setBackground(new Color(0, 0, 0, 0));
-        this.setLocationRelativeTo(null);
-    }
+    this(user instanceof Administrator ? (Administrator) user : null, adctrl, nav, appctrl, doctrl, hospctrl, ptctrl);
+}
 
-    public AdminView(User user,
-                     ArrayList<User> users,
-                     ArrayList<Hospitalization> hospitalizations,
-                     ArrayList<Appointment> appointments) {
-
-        initComponents();
-
-        this.user = user;
-        this.users = users;
-        this.hospitalizations = hospitalizations;
-        this.appointments = appointments;
-
-        loadUserCombos();
-        this.setBackground(new Color(0, 0, 0, 0));
-        this.setLocationRelativeTo(null);
-    }
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -492,16 +467,31 @@ public class AdminView extends javax.swing.JFrame {
         if (password.equals(comPassword)) {
             users.add(new Doctor(id, username, firstname, lastname, password, specialty, licenseNumber, assignedOffice));
         }
+               try {
+            AdminUpdateDTO dto = buildPatientUpdateDTO();
+            Response response = adctrl.updatePatient(dto);
+            JOptionPane.showMessageDialog(null, response.getMessage());
+
+            if (response.isSuccess()) {
+                clearPasswordFields();
+                loadPatientInfo();
+            }
+        } catch (RuntimeException e) {
+            JOptionPane.showMessageDialog(null, "Please check the patient information");
+        }
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnDoctorViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoctorViewActionPerformed
-        long idDoctor = Long.parseLong(cmbDoctor.getItemAt(cmbDoctor.getSelectedIndex()));
-        Doctor temp = null;
-        for(User use:this.users){
-            if(use.getId() == idDoctor)
-                temp =(Doctor) user;
+
+           Doctor selectedDoctor = findSelectedDoctor();
+
+        if (selectedDoctor == null) {
+            JOptionPane.showMessageDialog(null, "Please select a patient");
+            return;
         }
-        DoctorView doctor = new DoctorView(user,temp, users, hospitalizations,appointments);
+
+        NavigationController nav = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
+        DoctorView doctor = new DoctorView(user, selectedDoctor, nav, appctrl, doctrl, hospctrl, ptctrl);
         this.setVisible(false);
         doctor.setVisible(true);
     }//GEN-LAST:event_btnDoctorViewActionPerformed
@@ -556,6 +546,21 @@ public class AdminView extends javax.swing.JFrame {
         for (User userItem : users) {
             if (userItem instanceof Patient && userItem.getId() == id) {
                 return (Patient) userItem;
+            }
+        }
+
+        return null;
+    }
+      private Doctor findSelectedDoctor() {
+        if (cmbDoctor.getSelectedIndex() <= 0) {
+            return null;
+        }
+
+        long id = Long.parseLong(cmbDoctor.getItemAt(cmbDoctor.getSelectedIndex()).split(" - ")[0]);
+
+        for (User userItem : users) {
+            if (userItem instanceof Doctor && userItem.getId() == id) {
+                return (Doctor) userItem;
             }
         }
 

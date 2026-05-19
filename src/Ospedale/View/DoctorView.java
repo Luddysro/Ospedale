@@ -4,6 +4,15 @@
  */
 package Ospedale.View;
 
+import Ospedale.Controller.AppointmentController;
+import Ospedale.Controller.DoctorController;
+import Ospedale.Controller.HospitalizationController;
+import Ospedale.Controller.NavigationController;
+import Ospedale.Controller.PatientController;
+import Ospedale.Controller.Utils.Response;
+import Ospedale.DTO.AppointmentTableDTO;
+import Ospedale.DTO.DoctorUpdateDTO;
+import Ospedale.DTO.PatientUpdateDTO;
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.AppointmentStatus;
@@ -21,6 +30,8 @@ import java.awt.Color;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -31,27 +42,39 @@ import javax.swing.table.DefaultTableModel;
 public class DoctorView extends javax.swing.JFrame {
 
     private int x, y;
-    private User user;
-    private ArrayList<User> users;
-    private ArrayList<Hospitalization>hospitalizations;
-    private ArrayList<Appointment>appointments;
-    private Doctor doctor;
-    private Patient patient;
-    public DoctorView(User user,Doctor doc, ArrayList<User> users,ArrayList<Hospitalization> hospitalizations,ArrayList<Appointment> appointments) {
-        initComponents();
-        this.user = user;
-        this.users =users;
-        this.doctor = doc;
-        this.hospitalizations = hospitalizations;
-        this.appointments = appointments;
-        if (user instanceof Administrator)
-            btnBack.setVisible(true);
-        else    
-            btnBack.setVisible(false);
-        this.setBackground(new Color(0, 0, 0, 0));
-        this.setLocationRelativeTo(null);
-    }
+   private User currentUser;
+    private Doctor selectedDoctor;
+    private NavigationController nav;
+    private AppointmentController appctrl;
+    private HospitalizationController hospctrl;
+    private PatientController ptctrl;
+    private DoctorController doctrl;
+    
+    public DoctorView(User user, NavigationController nav, AppointmentController appctrl, DoctorController doctrl,
+HospitalizationController hospctrl, PatientController ptctrl) {
 
+    this(user, user instanceof Doctor ? (Doctor) user : null, nav, appctrl, doctrl, hospctrl, ptctrl);
+}
+
+  public DoctorView(User currentUser, Doctor selectedDoctor, NavigationController nav,
+AppointmentController appctrl, DoctorController doctrl, HospitalizationController hospctrl,
+PatientController ptctrl) {
+
+    initComponents();
+
+    this.currentUser = currentUser;
+    this.selectedDoctor = selectedDoctor;
+    this.nav = nav;
+    this.appctrl = appctrl;
+    this.doctrl = doctrl;
+    this.hospctrl = hospctrl;
+    this.ptctrl = ptctrl;
+
+    btnBack.setVisible(currentUser instanceof Administrator);
+    loadInitialData();
+
+    this.setLocationRelativeTo(null);
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -1131,39 +1154,21 @@ public class DoctorView extends javax.swing.JFrame {
     private void rdbPendingAppointmentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdbPendingAppointmentsActionPerformed
         // TODO add your handling code here:
         rdbTotAppointments.setSelected(false);
-        Doctor d = (Doctor) user;
-        DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
-        model.setRowCount(0);
-        for (Appointment a : d.getAppointments()) {
-            if (a.getStatus().equals(AppointmentStatus.PENDING)) {
-                model.addRow(new Object[]{a.getId(), a.getDatetime().toString(), a.getPatient().getFirstname() + " " + a.getDoctor().getLastname(), a.getSpecialty().name(), a.isType() ? "In person" : "Virtual", a.getStatus().name()});
-            }
-        }
+         loadAppointments();
     }//GEN-LAST:event_rdbPendingAppointmentsActionPerformed
 
     private void BtnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSaveActionPerformed
-        String firstname = txtFirstname.getText();
-        String lastname = txtLastName.getText();
-        String spec = cmbSpecialty.getItemAt(cmbSpecialty.getSelectedIndex());
-        String licenseNumber = txtLicense.getText();
-        String assignedOffice = txtAssignedOffice.getText();
-        String username = txtUser.getText();
-        String password = txtPassword.getText();
-        String comPassword = txtPasswordConfirmation.getText();
-        Specialty specialty = Specialty.valueOf(spec.replaceAll(" &", "").replaceAll(" ", "_"));
-        if (password.equals(comPassword)) {
-            for(User doc: this.users){
-                if (doctor.getId() == doc.getId()) {
-                    doctor.setFirstname(firstname);
-                    doctor.setLastname(lastname);
-                    doctor.setPassword(password);
-                    doctor.setUsername(username);
-                    doctor.setAssignedOffice(assignedOffice);
-                    doctor.setLicenceNumber(licenseNumber);
-                    doctor.setSpecialty(specialty);
-                    
-                }
+         try {
+            DoctorUpdateDTO dto = buildDoctorUpdateDTO();
+            Response response = doctrl.updateDoctor(dto);
+            JOptionPane.showMessageDialog(null, response.getMessage());
+
+            if (response.isSuccess()) {
+                clearPasswordFields();
+                loadPatientInfo();
             }
+        } catch (RuntimeException e) {
+            JOptionPane.showMessageDialog(null, "Please check the patient information");
         }
     }//GEN-LAST:event_BtnSaveActionPerformed
 
@@ -1226,12 +1231,7 @@ public class DoctorView extends javax.swing.JFrame {
     private void rdbTotAppointmentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdbTotAppointmentsActionPerformed
         // TODO add your handling code here:
         rdbPendingAppointments.setSelected(false);
-        Doctor d = (Doctor) user;
-        DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
-        model.setRowCount(0);
-        for (Appointment a : d.getAppointments()) {
-            model.addRow(new Object[]{a.getId(), a.getDatetime().toString(), a.getPatient().getFirstname() + " " + a.getDoctor().getLastname(), a.getSpecialty().name(), a.isType() ? "In-person" : "Remote", a.getStatus().name()});
-        }
+        loadAppointments();
     }//GEN-LAST:event_rdbTotAppointmentsActionPerformed
 
     private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
@@ -1298,9 +1298,96 @@ public class DoctorView extends javax.swing.JFrame {
         appointment.setReason(reasonChangeTime);
     }//GEN-LAST:event_btnAcceptRescheduleActionPerformed
 
+    private void loadInitialData() {
+        loadDoctorInfo();
+        loadAppointments();
+        loadPatients();
+    }
+private void loadDoctorInfo(){
+         if (selectedDoctor == null) {
+            return;
+        }
+        txtFirstname.setText(nullToEmpty(selectedDoctor.getFirstname()));
+        txtLastName.setText(nullToEmpty(selectedDoctor.getLastname()));
+        txtLicense.setText(nullToEmpty(selectedDoctor.getLicenceNumber()));
+        txtAssignedOffice.setText(nullToEmpty(selectedDoctor.getAssignedOffice()));
+        cmbSpecialty.setSelectedIndex(nullToEmpty(selectedDoctor.getSpecialty()));
+        txtUser.setText(nullToEmpty(selectedDoctor.getUsername()));
+        clearPasswordFields();
+}
+   private void clearPasswordFields() {
+        txtPassword.setText("");
+        txtPasswordConfirmation.setText("");
+    }
+       private String nullToEmpty(String value) {
+        return value == null ? "" : value;
+    }
+private void loadAppointments(){ 
+       DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
+        model.setRowCount(0);
 
+        if (selectedDoctor == null) {
+            return;
+        }
+        List<AppointmentTableDTO> list = appctrl.getPatientAppointments(selectedDoctor.getId());
 
+        for (AppointmentTableDTO dto : list) {
+           if (rdbPendingAppointments.isSelected()
+    && !dto.getStatus().equals("PENDING")) {
+    continue;
+}
+            model.addRow(new Object[]{
+                dto.getId(),
+                dto.getDatetime(),
+                dto.getDoctorName(),
+                dto.getSpecialty(),
+                dto.getType(),
+                dto.getStatus()
+            });
+        }
+}
+    private DoctorUpdateDTO buildDoctorUpdateDTO() {
+        return new DoctorUpdateDTO(
+                selectedDoctor.getId(),
+                txtFirstname.getText(),
+                txtLastName.getText(),
+                cmbSpecialty.getItemAt(cmbSpecialty.getSelectedIndex()),
+                txtLicense.getText(),
+                txtAssignedOffice.getText(),
+                txtUser.getText(),
+                txtPassword.getText(),
+                txtPasswordConfirmation.getText()
+        );
+    }
+private void loadPatients(){
+          DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
+        model.setRowCount(0);
 
+        if (selectedDoctor == null) {
+            return;
+        }
+       PatientUpdateDTO selectedPatient =
+            (PatientUpdateDTO) cmbPatient.getSelectedItem();
+
+    if (selectedPatient == null) {
+        return;
+    }
+
+    List<AppointmentTableDTO> list =
+            appctrl.getPatientAppointments(
+                    selectedPatient.getId()
+            );
+        for (AppointmentTableDTO dto : list) {
+            model.addRow(new Object[]{
+                dto.getId(),
+                dto.getDatetime(),
+                dto.getDoctorName(),
+                dto.getSpecialty(),
+                dto.getType(),
+                dto.getStatus()
+            });
+        }
+} 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtnSave;
     private javax.swing.JButton btnAccept;
@@ -1407,4 +1494,5 @@ public class DoctorView extends javax.swing.JFrame {
     private javax.swing.JTextField txtTreatment;
     private javax.swing.JTextField txtUser;
     // End of variables declaration//GEN-END:variables
+
 }

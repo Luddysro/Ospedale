@@ -18,7 +18,7 @@ public class AppointmentTableDTO {
     private String status;
 
     public AppointmentTableDTO(String id, String datetime, String doctorName,
-                               String specialty, String type, String status) {
+    String specialty, String type, String status) {
         this.id = id;
         this.datetime = datetime;
         this.doctorName = doctorName;

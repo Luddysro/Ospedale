@@ -20,6 +20,17 @@ public class DoctorCreateDTO {
     private String licenseNumber;
     private String assignedOffice;
 
+    public DoctorCreateDTO(long id, String firstname, String lastname, String username, String password, Specialty specialty, String licenseNumber, String assignedOffice) {
+        this.id = id;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.username = username;
+        this.password = password;
+        this.specialty = specialty;
+        this.licenseNumber = licenseNumber;
+        this.assignedOffice = assignedOffice;
+    }
+
     public long getId() {
         return id;
     }
