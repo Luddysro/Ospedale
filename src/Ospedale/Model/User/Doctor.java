@@ -32,12 +32,10 @@ public class Doctor extends User {
         this.appointments = new ArrayList<>();
     }
 
-    public Doctor(long id, String username, String firstname, String lastname, String password) {
-        super(id, username, firstname, lastname, password);
-    }
+    
 
     public ArrayList<Appointment> getAppointments() {
-        return appointments;
+        return new ArrayList<>(appointments);
     }
 
     public Specialty getSpecialty() {
@@ -45,7 +43,7 @@ public class Doctor extends User {
     }
 
     public ArrayList<Hospitalization> getHospitalizations() {
-        return hospitalizations;
+        return new ArrayList<>(hospitalizations);
     }
 
     public String getLicenceNumber() {
@@ -72,11 +70,27 @@ public class Doctor extends User {
     public void setAssignedOffice(String assignedOffice) {
         this.assignedOffice = assignedOffice;
     }
+    
+    public void addAppointment(Appointment a) {
+        this.appointments.add(a);
+    }
     public HashMap<String, Object> serialize(){
 
     HashMap<String, Object> data =
             super.serialize();
-    data.put("hospitalizations", getHospitalizations());
+    ArrayList<HashMap<String,Object>> serializedHospitalizations = new ArrayList<>();
+    for (Hospitalization hospitalization : hospitalizations){
+        serializedHospitalizations.add(hospitalization.serialize());
+    }
+    data.put("hospitalizations", serializedHospitalizations);
+    
+    ArrayList<HashMap<String, Object>> serializedAppointments = new ArrayList<>();
+    
+    for (Appointment appointment : appointments) {
+        serializedAppointments.add(appointment.serialize());
+    }
+    
+    data.put("appointments", serializedAppointments);
     data.put("specialty", getSpecialty());
     data.put("licenseNumber",getLicenceNumber());
     data.put("assignedOffice", getAssignedOffice());

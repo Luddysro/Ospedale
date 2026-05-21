@@ -55,7 +55,7 @@ public class Appointment implements Serializable {
         this.patient = patient;
         patient.addAppointment(this);
         this.doctor = doctor;
-        
+        doctor.addAppointment(this);
         this.specialty = specialty;
         this.datetime = datetime;
         this.reason = reason;
@@ -106,7 +106,7 @@ public class Appointment implements Serializable {
        
        data.put("id",getId());
        data.put("patientId",patient.getId());
-       data.put("DoctorId",doctor.getId());
+       data.put("doctorId",doctor.getId());
        data.put("specialty",specialty);
        data.put("datetime",datetime);
        data.put("reason",reason);
@@ -116,9 +116,42 @@ public class Appointment implements Serializable {
        data.put("observations",observations);
        data.put("recommendedTreatment",recommendedTreatment);
        data.put("followUp", followUp);
+       
+       ArrayList<HashMap<String,Object>> serializedPrescriptions = new ArrayList<>();
+       for(Prescription prescription : prescriptions){
+           serializedPrescriptions.add(prescription.serialize());
+       }
+       data.put("prescriptions",serializedPrescriptions);
 
        return data;
     
     }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public ArrayList<Prescription> getPrescriptions() {
+        return new ArrayList<>(prescriptions);
+    }
+
+    public String getDiagnosis() {
+        return diagnosis;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+
+    public String getRecommendedTreatment() {
+        return recommendedTreatment;
+    }
+
+    public String getFollowUp() {
+        return followUp;
+    }
+    
+    
+    
     
 }
