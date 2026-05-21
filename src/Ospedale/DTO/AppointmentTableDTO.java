@@ -10,12 +10,12 @@ package Ospedale.DTO;
  */
 public class AppointmentTableDTO {
 
-    private String id;
-    private String datetime;
-    private String doctorName;
-    private String specialty;
-    private String type;
-    private String status;
+    public String id;
+    public String datetime;
+    public String doctorName;
+    public String specialty;
+    public String type;
+    public String status;
 
     public AppointmentTableDTO(String id, String datetime, String doctorName,
     String specialty, String type, String status) {

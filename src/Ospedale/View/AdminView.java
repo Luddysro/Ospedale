@@ -5,28 +5,25 @@
 package Ospedale.View;
 
 import Data.Storage;
-import Ospedale.Controller.AdminController;
+import Ospedale.AppContext;
 import Ospedale.Controller.AppointmentController;
 import Ospedale.Controller.DoctorController;
 import Ospedale.Controller.HospitalizationController;
 import Ospedale.Controller.NavigationController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Controller.Utils.Response;
-import Ospedale.DTO.AdminUpdateDTO;
-import Ospedale.DTO.DoctorListDTO;
+import Ospedale.DTO.DoctorCreateDTO;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.Hospitalization;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.Specialty;
-import Ospedale.Model.User.Administrator;
 import Ospedale.Model.User.User;
 import Ospedale.View.PatientView;
 import Ospedale.View.BaseView;
 import java.awt.Color;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
-import sun.nio.fs.WindowsUserPrincipals;
 
 /**
  *
@@ -36,32 +33,69 @@ import sun.nio.fs.WindowsUserPrincipals;
 public class AdminView extends javax.swing.JFrame {
    private int x,y;
    private User user;
+   private AppContext context;
     private AppointmentController appctrl;
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
     private DoctorController doctrl;
-    private AdminController adctrl;
+    private ArrayList<User> users;
+    private ArrayList<Hospitalization> hospitalizations;
+    private ArrayList<Appointment> appointments;
 
-    public AdminView(User user, AppointmentController appctrl, HospitalizationController hospctrl, PatientController ptctrl, DoctorController doctrl) {
+    public AdminView(User user,
+                     AppointmentController appctrl,
+                     HospitalizationController hospctrl,
+                     PatientController ptctrl,
+                     DoctorController doctrl) {
 
         initComponents();
-        
+
         this.user = user;
-        this.adctrl = adctrl;
         this.appctrl = appctrl;
         this.hospctrl = hospctrl;
         this.ptctrl = ptctrl;
         this.doctrl = doctrl;
+        this.users = Storage.getInstance().getUsers();
+        this.hospitalizations = Storage.getInstance().getHospitalizations();
+        this.appointments = Storage.getInstance().getAppointments();
         loadUserCombos();
+
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
     }
-public AdminView(User user, AdminController adctrl, NavigationController nav, AppointmentController appctrl, DoctorController doctrl,
-HospitalizationController hospctrl, PatientController ptctrl) {
 
-    this(user instanceof Administrator ? (Administrator) user : null, adctrl, nav, appctrl, doctrl, hospctrl, ptctrl);
-}
+    public AdminView(User user, AppContext context) {
+        this(user,
+             context.getAppointmentController(),
+             context.getHospitalizationController(),
+             context.getPatientController(),
+             context.getDoctorController());
+        this.context = context;
+    }
 
+    public AdminView(User user) {
+        initComponents();
+        this.user = user;
+        this.users = Storage.getInstance().getUsers();
+        this.hospitalizations = Storage.getInstance().getHospitalizations();
+        this.appointments = Storage.getInstance().getAppointments();
+        loadUserCombos();
+        this.setLocationRelativeTo(null);
+    }
+
+    public AdminView(User user,
+                     ArrayList<User> users,
+                     ArrayList<Hospitalization> hospitalizations,
+                     ArrayList<Appointment> appointments) {
+        initComponents();
+        this.user = user;
+        this.users = users;
+        this.hospitalizations = hospitalizations;
+        this.appointments = appointments;
+        loadUserCombos();
+        this.setLocationRelativeTo(null);
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -451,117 +485,92 @@ HospitalizationController hospctrl, PatientController ptctrl) {
     }//GEN-LAST:event_btnXActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        String firstname = txtFirstName.getText();
-        String lastname = txtLastName.getText();
-        long id = Long.parseLong(txtID.getText());
-        String spec = jComboBox1.getItemAt(jComboBox1.getSelectedIndex());
-        String licenseNumber = txtLicense.getText();
-        String assignedOffice = txtAssignedOffice.getText();
-        String username = txtUser.getText();
-        String password = txtPassword.getText();
-        String comPassword = txtPasswordConfirmation.getText();
-        Specialty specialty = Specialty.valueOf(spec.replaceAll(" &", "").replaceAll(" ", "_"));
-        if (password.equals(comPassword)) {
-            users.add(new Doctor(id, username, firstname, lastname, password, specialty, licenseNumber, assignedOffice));
-        }
-               try {
-            AdminUpdateDTO dto = buildPatientUpdateDTO();
-            Response response = adctrl.updatePatient(dto);
-            JOptionPane.showMessageDialog(null, response.getMessage());
-
-            if (response.isSuccess()) {
-                clearPasswordFields();
-                loadPatientInfo();
-            }
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(null, "Please check the patient information");
+        DoctorCreateDTO dto = new DoctorCreateDTO(
+                txtID.getText(),
+                txtFirstName.getText(),
+                txtLastName.getText(),
+                txtUser.getText(),
+                txtPassword.getText(),
+                txtPasswordConfirmation.getText(),
+                jComboBox1.getItemAt(jComboBox1.getSelectedIndex()),
+                txtLicense.getText(),
+                txtAssignedOffice.getText()
+        );
+        Response response = doctrl.createDoctor(dto);
+        JOptionPane.showMessageDialog(null, response.getMessage());
+        if (response.isSuccess()) {
+            clearDoctorFields();
+            loadUserCombos();
         }
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnDoctorViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoctorViewActionPerformed
-
-           Doctor selectedDoctor = findSelectedDoctor();
-
-        if (selectedDoctor == null) {
-            JOptionPane.showMessageDialog(null, "Please select a patient");
-            return;
+        long idDoctor = Long.parseLong(cmbDoctor.getItemAt(cmbDoctor.getSelectedIndex()));
+        Doctor temp = null;
+        for(User use:this.users){
+            if(use.getId() == idDoctor)
+                temp =(Doctor) user;
         }
-
-        NavigationController nav = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
-        DoctorView doctor = new DoctorView(user, selectedDoctor, nav, appctrl, doctrl, hospctrl, ptctrl);
+        DoctorView doctor = context == null
+                ? new DoctorView(user,temp, users, hospitalizations,appointments)
+                : new DoctorView(user, temp, context);
         this.setVisible(false);
         doctor.setVisible(true);
     }//GEN-LAST:event_btnDoctorViewActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
         
-        BaseView login = new BaseView();
+        BaseView login = context == null ? new BaseView() : new BaseView(context);
         this.setVisible(false);
         login.setVisible(true);
     }//GEN-LAST:event_btnLogoutActionPerformed
 
     private void btnPatientViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPatientViewActionPerformed
-        Patient selectedPatient = findSelectedPatient();
-
-        if (selectedPatient == null) {
+        long idPatient = Long.parseLong(cmbPatient.getItemAt(cmbPatient.getSelectedIndex()));
+        Patient temp = null;
+        for(User use:this.users){
+            if(use.getId() == idPatient)
+                temp =(Patient) use;
+        }
+        if (temp == null) {
             JOptionPane.showMessageDialog(null, "Please select a patient");
             return;
         }
-
         NavigationController nav = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
-        PatientView patient = new PatientView(user, selectedPatient, nav, appctrl, doctrl, hospctrl, ptctrl);
+        PatientView patient = context == null
+                ? new PatientView(temp, nav, appctrl, doctrl, hospctrl, ptctrl)
+                : new PatientView(temp, context, nav, appctrl, doctrl, hospctrl, ptctrl);
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_btnPatientViewActionPerformed
 
     private void loadUserCombos() {
+        if (cmbDoctor == null || cmbPatient == null || users == null) {
+            return;
+        }
         cmbDoctor.removeAllItems();
         cmbPatient.removeAllItems();
-        cmbDoctor.addItem("Select one");
-        cmbPatient.addItem("Select one");
-
-        if (doctrl != null) {
-            for (DoctorListDTO doctor : doctrl.getDoctorList()) {
-                cmbDoctor.addItem(doctor.toString());
-            }
-        }
-
-        for (User userItem : users) {
-            if (userItem instanceof Patient) {
-                cmbPatient.addItem(userItem.getId() + " - " + userItem.getFirstname() + " " + userItem.getLastname());
+        cmbDoctor.addItem("0");
+        cmbPatient.addItem("0");
+        for (User item : users) {
+            if (item instanceof Doctor) {
+                cmbDoctor.addItem(String.valueOf(item.getId()));
+            } else if (item instanceof Patient) {
+                cmbPatient.addItem(String.valueOf(item.getId()));
             }
         }
     }
 
-    private Patient findSelectedPatient() {
-        if (cmbPatient.getSelectedIndex() <= 0) {
-            return null;
-        }
-
-        long id = Long.parseLong(cmbPatient.getItemAt(cmbPatient.getSelectedIndex()).split(" - ")[0]);
-
-        for (User userItem : users) {
-            if (userItem instanceof Patient && userItem.getId() == id) {
-                return (Patient) userItem;
-            }
-        }
-
-        return null;
-    }
-      private Doctor findSelectedDoctor() {
-        if (cmbDoctor.getSelectedIndex() <= 0) {
-            return null;
-        }
-
-        long id = Long.parseLong(cmbDoctor.getItemAt(cmbDoctor.getSelectedIndex()).split(" - ")[0]);
-
-        for (User userItem : users) {
-            if (userItem instanceof Doctor && userItem.getId() == id) {
-                return (Doctor) userItem;
-            }
-        }
-
-        return null;
+    private void clearDoctorFields() {
+        txtFirstName.setText("");
+        txtLastName.setText("");
+        txtID.setText("");
+        jComboBox1.setSelectedIndex(0);
+        txtLicense.setText("");
+        txtAssignedOffice.setText("");
+        txtUser.setText("");
+        txtPassword.setText("");
+        txtPasswordConfirmation.setText("");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

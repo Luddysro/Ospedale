@@ -4,18 +4,17 @@
  */
 package Data;
 
-import Ospedale.Model.Specialty;
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
-import java.io.FileReader;
+import Ospedale.Model.Specialty;
+import java.time.LocalDate;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 
 public class JSONLoader {
 
@@ -24,7 +23,7 @@ public class JSONLoader {
         Storage storage = Storage.getInstance();
 
         try {
-            String content = new String(Files.readAllBytes(Paths.get("json/users.json")));
+            String content = new String(Files.readAllBytes(Paths.get("src/Data/users.json")));
 
             JSONObject root = new JSONObject(content);
             JSONArray usersArray = root.getJSONArray("users");
@@ -38,27 +37,36 @@ public class JSONLoader {
                 String firstname = json.getString("firstname");
                 String lastname = json.getString("lastname");
                 String password = json.getString("password");
-                String email = json.getString("email");
-                LocalDate birthdate = LocalDate.parse(json.getString("birthdate"));
-                boolean gender = json.getBoolean("gender");
-                long phone = json.getLong("phone");
-                String address = json.getString("address");
-                Specialty specialty = Specialty.valueOf(json.getString("specialty"));
-                String licenceNumber = json.getString("licenceNumber");
-                String assignedOffice = json.getString("assignedOffice");
                 if (type.equals("patient")) {
-                    Patient patient = new Patient(id,username,firstname,lastname,password,email,birthdate,gender,phone,address);
+                    Patient patient = new Patient(id, username, firstname, lastname, password, 
+                    json.getString("email"), LocalDate.parse(json.getString("birthdate")),
+                    json.getBoolean("gender"), json.getLong("phone"), json.getString("address"));
                     storage.getUsers().add(patient);
                 } else if (type.equals("admin")) {
-                    Administrator admin = new Administrator(id, username, firstname,lastname , password);
+                    Administrator admin = new Administrator(id, username, firstname, lastname, password);
                     storage.getUsers().add(admin);
                 } else if (type.equals("doctor")) {
-                    Doctor doctor = new Doctor(id,username,firstname,lastname,password,specialty,licenceNumber,assignedOffice);
+                    Doctor doctor = new Doctor(id, username, firstname, lastname, password, 
+                    parseSpecialty(json.getString("specialty")), json.getString("licenceNumber"),
+                    json.getString("assignedOffice")
+                    );
                     storage.getUsers().add(doctor);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static Specialty parseSpecialty(String value) {
+        if ("ORTHOPEDICS".equals(value)) {
+            return Specialty.TRAUMATOLOGY_ORTHOPEDICS;
+        }
+
+        if ("GYNECOLOGY".equals(value)) {
+            return Specialty.GYNECOLOGY_OBSTETRICS;
+        }
+
+        return Specialty.valueOf(value);
     }
 }

@@ -4,53 +4,40 @@
  */
 package Ospedale.DTO;
 
+import Ospedale.Model.Appointment;
+import java.time.LocalDateTime;
+
 /**
  *
  * @author luddy
  */
 public class AppointmentCreateDTO {
-    private long patientId;
-    private String doctorId;
-    private String date;
-    private String time;
-    private String reason;
-    private String type;
+    public long patientId;
+    public long doctorId;
+    public LocalDateTime datetime;
+    public String reason;
+    public boolean type; 
 
-    public AppointmentCreateDTO(long patientId,
-                                String doctorId,
-                                String date,
-                                String time,
-                                String reason,
-                                String type) {
-        this.patientId = patientId;
-        this.doctorId = doctorId;
-        this.date = date;
-        this.time = time;
-        this.reason = reason;
-        this.type = type;
+    public AppointmentCreateDTO() {
     }
 
     public long getPatientId() {
         return patientId;
     }
 
-    public String getDoctorId() {
+    public long getDoctorId() {
         return doctorId;
     }
 
-    public String getDate() {
-        return date;
-    }
-
-    public String getTime() {
-        return time;
+    public LocalDateTime getDatetime() {
+        return datetime;
     }
 
     public String getReason() {
         return reason;
     }
 
-    public String getType() {
+    public boolean isType() {
         return type;
     }
 }

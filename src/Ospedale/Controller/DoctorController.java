@@ -5,20 +5,12 @@
 package Ospedale.Controller;
 
 import Data.Storage;
-import Ospedale.Services.DoctorService;
-
-import Ospedale.DTO.DoctorCreateDTO;
-import Ospedale.DTO.DoctorListDTO;
-
-import Data.UserRepository;
 import Ospedale.Controller.Utils.Response;
 import Ospedale.Controller.Utils.Status;
-import Ospedale.DTO.DoctorListDTO;
-import Ospedale.DTO.DoctorUpdateDTO;
-
+import Ospedale.DTO.DoctorCreateDTO;
+import Ospedale.Model.Specialty;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.User;
-import Ospedale.Services.DoctorService;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,68 +20,56 @@ import java.util.List;
  */
 public class DoctorController {
 
-    private final DoctorService doctorService;
     private Storage storage;
-    
-    public DoctorController(DoctorService doctorService) {
-        this.doctorService = doctorService;
-    }
 
     public DoctorController(Storage storage) {
-        this(new DoctorService(new UserRepository(storage)));
+        this.storage = storage;
     }
 
+    public Response createDoctor(DoctorCreateDTO dto) {
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            return new Response("Passwords don't match", Status.BAD_REQUEST);
+        }
 
-    public List<DoctorListDTO> getDoctors() {
+        try {
+            long id = Long.parseLong(dto.getId());
+            Specialty specialty = Specialty.valueOf(dto.getSpecialty().replaceAll(" &", "").replaceAll(" ", "_"));
+            Doctor doctor = new Doctor(
+                    id,
+                    dto.getUsername(),
+                    dto.getFirstname(),
+                    dto.getLastname(),
+                    dto.getPassword(),
+                    specialty,
+                    dto.getLicenseNumber(),
+                    dto.getAssignedOffice()
+            );
+            storage.getUsers().add(doctor);
+            return new Response("Doctor created", Status.CREATED);
+        } catch (RuntimeException e) {
+            return new Response("Invalid doctor information", Status.BAD_REQUEST);
+        }
+    }
 
-        List<DoctorListDTO> doctors = new ArrayList<>();
+    public List<Doctor> getDoctors() {
+
+        List<Doctor> doctors = new ArrayList<>();
 
         for (User user : storage.getUsers()) {
             if (user instanceof Doctor) {
-                Doctor doctor = (Doctor) user;
-                
-                DoctorCreateDTO dto=new DoctorCreateDTO(
-                doctor.getId(),
-                doctor.getFirstname(),
-                doctor.getLastname(),
-                doctor.getUsername(),
-                doctor.getPassword(),
-                
-                doctor.getSpecialty(),
-                doctor.getLicenceNumber(),
-                doctor.getAssignedOffice()
-                );
-                
-                
+                doctors.add((Doctor) user);
             }
         }
 
         return doctors;
     }
      public List<String> getDoctorNames() {
-    List<String> options = new ArrayList<>();
+    List<String> names = new ArrayList<>();
 
-    for (DoctorListDTO doc : getDoctors()) {
-        options.add(doc.getId() + " " + doc.getFullName());
+    for (Doctor doc : getDoctors()) {
+        names.add(doc.getFirstname() + " " + doc.getLastname());
     }
 
-    return options;
+    return names;
 }
-
-    public Response updateDoctor(DoctorUpdateDTO dto){
-     try {
-            doctorService.updateDoctor(dto);
-            return new Response("Doctor updated", Status.OK);
-        } catch (IllegalArgumentException e) {
-            return new Response("Passwords don't match", Status.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            return new Response(e.getMessage(), Status.NOT_FOUND);
-        }
-}
-    
-
-    public List<DoctorListDTO> getDoctorList() {
-        return doctorService.getDoctorList();
-    }
-
 }
