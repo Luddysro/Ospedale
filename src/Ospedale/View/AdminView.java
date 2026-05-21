@@ -34,14 +34,14 @@ import javax.swing.JOptionPane;
  */
 public class AdminView extends javax.swing.JFrame {
    private int x,y;
-   private User user;
+   private Administrator admin;
     private AppointmentController appctrl;
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
     private DoctorController doctrl;
     private AdminController adctrl;
 
-    public AdminView(User user,AdminController adctrl,
+    public AdminView(Administrator admin,AdminController adctrl,
                      AppointmentController appctrl,
                      HospitalizationController hospctrl,
                      PatientController ptctrl,
@@ -49,7 +49,7 @@ public class AdminView extends javax.swing.JFrame {
 
         initComponents();
         
-        this.user = user;
+        this.admin = admin;
         this.adctrl = adctrl;
         this.appctrl = appctrl;
         this.hospctrl = hospctrl;
@@ -59,11 +59,6 @@ public class AdminView extends javax.swing.JFrame {
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
     }
-public AdminView(User user, AdminController adctrl, NavigationController nav, AppointmentController appctrl, DoctorController doctrl,
-HospitalizationController hospctrl, PatientController ptctrl) {
-
-    this(user instanceof Administrator ? (Administrator) user : null, adctrl, nav, appctrl, doctrl, hospctrl, ptctrl);
-}
 
 
     /**
@@ -490,8 +485,8 @@ HospitalizationController hospctrl, PatientController ptctrl) {
             return;
         }
 
-        NavigationController nav = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
-        DoctorView doctor = new DoctorView(user, selectedDoctor, nav, appctrl, doctrl, hospctrl, ptctrl);
+        NavigationController nav = new NavigationController(admin, appctrl, hospctrl, ptctrl, doctrl);
+        DoctorView doctor = new DoctorView(admin, selectedDoctor, nav, appctrl, doctrl, hospctrl, ptctrl);
         this.setVisible(false);
         doctor.setVisible(true);
     }//GEN-LAST:event_btnDoctorViewActionPerformed
@@ -511,8 +506,8 @@ HospitalizationController hospctrl, PatientController ptctrl) {
             return;
         }
 
-        NavigationController nav = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
-        PatientView patient = new PatientView(user, selectedPatient, nav, appctrl, doctrl, hospctrl, ptctrl);
+        NavigationController nav = new NavigationController(admin, appctrl, hospctrl, ptctrl, doctrl);
+        PatientView patient = new PatientView(admin, selectedPatient, nav, appctrl, doctrl, hospctrl, ptctrl);
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_btnPatientViewActionPerformed

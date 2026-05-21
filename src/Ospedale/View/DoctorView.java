@@ -1165,10 +1165,10 @@ PatientController ptctrl) {
 
             if (response.isSuccess()) {
                 clearPasswordFields();
-                loadPatientInfo();
+                loadPatients();
             }
         } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(null, "Please check the patient information");
+            JOptionPane.showMessageDialog(null, "Please check the doctor information");
         }
     }//GEN-LAST:event_BtnSaveActionPerformed
 
@@ -1179,9 +1179,7 @@ PatientController ptctrl) {
     }//GEN-LAST:event_btnLogoutActionPerformed
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        AdminView admin = new AdminView(user,users,hospitalizations, appointments);
-        this.setVisible(false);
-        admin.setVisible(true);
+         nav.openAdminView(this);
     }//GEN-LAST:event_btnBackActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
@@ -1311,7 +1309,7 @@ private void loadDoctorInfo(){
         txtLastName.setText(nullToEmpty(selectedDoctor.getLastname()));
         txtLicense.setText(nullToEmpty(selectedDoctor.getLicenceNumber()));
         txtAssignedOffice.setText(nullToEmpty(selectedDoctor.getAssignedOffice()));
-        cmbSpecialty.setSelectedIndex(nullToEmpty(selectedDoctor.getSpecialty()));
+        cmbSpecialty.setSelectedItem(nullToEmpty(selectedDoctor.getSpecialty().name()));
         txtUser.setText(nullToEmpty(selectedDoctor.getUsername()));
         clearPasswordFields();
 }

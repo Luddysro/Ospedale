@@ -30,9 +30,9 @@ public class DoctorController {
         this(new DoctorService(new UserRepository(storage)));
     }
     
-    public updateDoctor(DoctorUpdateDTO dto){
+    public Response updateDoctor(DoctorUpdateDTO dto){
      try {
-            DoctorService.updateDoctor(dto);
+            doctorService.updateDoctor(dto);
             return new Response("Doctor updated", Status.OK);
         } catch (IllegalArgumentException e) {
             return new Response("Passwords don't match", Status.BAD_REQUEST);

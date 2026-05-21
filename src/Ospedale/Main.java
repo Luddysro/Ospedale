@@ -25,7 +25,7 @@ public static void main(String[] args) {
 
     PatientService patientService = new PatientService(userRepository);
     AppointmentService appointmentService =
-            new AppointmentService(appointmentRepo, userRepository);
+    new AppointmentService(appointmentRepo, userRepository);
 
     PatientController patientController =
             new PatientController(patientService);
