@@ -31,6 +31,7 @@ public class DoctorCreateDTO {
         this.assignedOffice = assignedOffice;
     }
 
+
     public long getId() {
         return id;
     }

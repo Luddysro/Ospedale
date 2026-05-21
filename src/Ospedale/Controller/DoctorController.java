@@ -5,13 +5,21 @@
 package Ospedale.Controller;
 
 import Data.Storage;
+import Ospedale.Services.DoctorService;
+
+import Ospedale.DTO.DoctorCreateDTO;
+import Ospedale.DTO.DoctorListDTO;
+
 import Data.UserRepository;
 import Ospedale.Controller.Utils.Response;
 import Ospedale.Controller.Utils.Status;
 import Ospedale.DTO.DoctorListDTO;
 import Ospedale.DTO.DoctorUpdateDTO;
+
 import Ospedale.Model.User.Doctor;
+import Ospedale.Model.User.User;
 import Ospedale.Services.DoctorService;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,7 +29,8 @@ import java.util.List;
 public class DoctorController {
 
     private final DoctorService doctorService;
-
+    private Storage storage;
+    
     public DoctorController(DoctorService doctorService) {
         this.doctorService = doctorService;
     }
@@ -29,7 +38,44 @@ public class DoctorController {
     public DoctorController(Storage storage) {
         this(new DoctorService(new UserRepository(storage)));
     }
-    
+
+
+    public List<DoctorListDTO> getDoctors() {
+
+        List<DoctorListDTO> doctors = new ArrayList<>();
+
+        for (User user : storage.getUsers()) {
+            if (user instanceof Doctor) {
+                Doctor doctor = (Doctor) user;
+                
+                DoctorCreateDTO dto=new DoctorCreateDTO(
+                doctor.getId(),
+                doctor.getFirstname(),
+                doctor.getLastname(),
+                doctor.getUsername(),
+                doctor.getPassword(),
+                
+                doctor.getSpecialty(),
+                doctor.getLicenceNumber(),
+                doctor.getAssignedOffice()
+                );
+                
+                
+            }
+        }
+
+        return doctors;
+    }
+     public List<String> getDoctorNames() {
+    List<String> options = new ArrayList<>();
+
+    for (DoctorListDTO doc : getDoctors()) {
+        options.add(doc.getId() + " " + doc.getFullName());
+    }
+
+    return options;
+}
+
     public Response updateDoctor(DoctorUpdateDTO dto){
      try {
             doctorService.updateDoctor(dto);
@@ -40,11 +86,10 @@ public class DoctorController {
             return new Response(e.getMessage(), Status.NOT_FOUND);
         }
 }
-    public List<Doctor> getDoctors() {
-        return doctorService.getDoctors();
-    }
+    
 
     public List<DoctorListDTO> getDoctorList() {
         return doctorService.getDoctorList();
     }
+
 }

@@ -72,7 +72,6 @@ public HashMap<String, Object> serialize(){
     data.put("firstname", getFirstname());
     data.put("lastname", getLastname());
     data.put("username", getUsername());
-    data.put("password", getPassword());
 
     return data;
 }

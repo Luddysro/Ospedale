@@ -4,6 +4,7 @@
  */
 package Data;
 
+import Ospedale.Model.Specialty;
 import Ospedale.Model.User.Administrator;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
@@ -14,6 +15,7 @@ import org.json.JSONObject;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 
 public class JSONLoader {
 
@@ -22,11 +24,10 @@ public class JSONLoader {
         Storage storage = Storage.getInstance();
 
         try {
-            String content
-                    = new String(Files.readAllBytes(Paths.get("users.json")));
+            String content = new String(Files.readAllBytes(Paths.get("json/users.json")));
 
-            JSONArray usersArray
-                    = new JSONArray(content);
+            JSONObject root = new JSONObject(content);
+            JSONArray usersArray = root.getJSONArray("users");
 
             for (int i = 0; i < usersArray.length(); i++) {
 
@@ -37,14 +38,22 @@ public class JSONLoader {
                 String firstname = json.getString("firstname");
                 String lastname = json.getString("lastname");
                 String password = json.getString("password");
+                String email = json.getString("email");
+                LocalDate birthdate = LocalDate.parse(json.getString("birthdate"));
+                boolean gender = json.getBoolean("gender");
+                long phone = json.getLong("phone");
+                String address = json.getString("address");
+                Specialty specialty = Specialty.valueOf(json.getString("specialty"));
+                String licenceNumber = json.getString("licenceNumber");
+                String assignedOffice = json.getString("assignedOffice");
                 if (type.equals("patient")) {
-                    Patient patient = new Patient(id, firstname, lastname, username, password);
+                    Patient patient = new Patient(id,username,firstname,lastname,password,email,birthdate,gender,phone,address);
                     storage.getUsers().add(patient);
                 } else if (type.equals("admin")) {
-                    Administrator admin = new Administrator(id, firstname, lastname, username, password);
+                    Administrator admin = new Administrator(id, username, firstname,lastname , password);
                     storage.getUsers().add(admin);
                 } else if (type.equals("doctor")) {
-                    Doctor doctor = new Doctor(id, firstname, lastname, username, password);
+                    Doctor doctor = new Doctor(id,username,firstname,lastname,password,specialty,licenceNumber,assignedOffice);
                     storage.getUsers().add(doctor);
                 }
             }

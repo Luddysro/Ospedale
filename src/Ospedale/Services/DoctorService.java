@@ -63,10 +63,11 @@ public class DoctorService {
     }
     private Specialty parseSpecialty(String specialty) {
 
-    if (specialty == null || specialty.isBlank()) {
-        return null;
-    }
-
+    if (specialty == null || specialty.trim().isEmpty()) {
+    return null;
+       }
+    
+    
     try {
         return Specialty.valueOf(
                 specialty.trim().toUpperCase()
