@@ -7,6 +7,7 @@ package Data;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.User;
+import Ospedale.Model.Specialty;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,28 @@ public class UserRepository {
         return null;
     }
 
+    public Doctor findDoctorBySpecialty(Specialty specialty) {
+        for (User u : storage.getUsers()) {
+            if (u instanceof Doctor && ((Doctor) u).getSpecialty().equals(specialty)) {
+                return (Doctor) u;
+            }
+        }
+        return null;
+    }
+
+    public void save(User user) {
+        storage.getUsers().add(user);
+    }
+
+    public User findById(long id) {
+        for (User u : storage.getUsers()) {
+            if (u.getId() == id) {
+                return u;
+            }
+        }
+        return null;
+    }
+
     public List<Doctor> findDoctors() {
         List<Doctor> doctors = new ArrayList<>();
 
@@ -50,5 +73,17 @@ public class UserRepository {
         }
 
         return doctors;
+    }
+
+    public List<Patient> findPatients() {
+        List<Patient> patients = new ArrayList<>();
+
+        for (User u : storage.getUsers()) {
+            if (u instanceof Patient) {
+                patients.add((Patient) u);
+            }
+        }
+
+        return patients;
     }
 }

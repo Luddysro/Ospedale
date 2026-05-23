@@ -56,4 +56,56 @@ public class AppointmentController {
    public List<AppointmentTableDTO> getPatientAppointments(long patientId) {
         return appointmentService.getAppointmentsByPatient(patientId);
     }
+
+   public List<AppointmentTableDTO> getDoctorAppointments(long doctorId) {
+        return appointmentService.getAppointmentsByDoctor(doctorId, null);
+    }
+
+   public List<AppointmentTableDTO> getPendingDoctorAppointments(long doctorId) {
+        return appointmentService.getAppointmentsByDoctor(doctorId, AppointmentStatus.PENDING);
+    }
+
+   public Response acceptAppointment(String idAppointment) {
+        try {
+            appointmentService.acceptAppointment(idAppointment);
+            return new Response("Appointment accepted", Status.OK);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+    }
+
+   public Response completeAppointment(String idAppointment, String diagnosis, String observations,
+                                       String recommendedTreatment, String followUp) {
+        try {
+            appointmentService.completeAppointment(idAppointment, diagnosis, observations, recommendedTreatment, followUp);
+            return new Response("Appointment completed", Status.OK);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+    }
+
+   public Response rescheduleAppointment(String idAppointment, String time, String reason) {
+        try {
+            appointmentService.rescheduleAppointment(idAppointment, time, reason);
+            return new Response("Appointment rescheduled", Status.OK);
+        } catch (IllegalArgumentException e) {
+            return new Response(e.getMessage(), Status.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+    }
+
+   public Response addPrescription(String idAppointment, String medicationName, String dose,
+                                   String administrationRoute, String treatmentDuration,
+                                   String additionalInformation, String frequency) {
+        try {
+            appointmentService.addPrescription(idAppointment, medicationName, dose,
+                    administrationRoute, treatmentDuration, additionalInformation, frequency);
+            return new Response("Prescription added", Status.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new Response(e.getMessage(), Status.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+    }
 }

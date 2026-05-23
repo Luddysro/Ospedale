@@ -100,38 +100,14 @@ public class BaseView extends javax.swing.JFrame {
     }
 
     private void openViewFor(User user) {
-        NavigationController nav = new NavigationController(
-                user,
-                context.getAppointmentController(),
-                context.getHospitalizationController(),
-                context.getPatientController(),
-                context.getDoctorController()
-        );
+        NavigationController nav = new NavigationController(user, context);
 
         if (user instanceof Administrator) {
-            AdminView adminView = new AdminView(user, context);
-            this.setVisible(false);
-            adminView.setVisible(true);
+            nav.openAdminView(this);
         } else if (user instanceof Patient) {
-            PatientView patientView = new PatientView(
-                    user,
-                    context,
-                    nav,
-                    context.getAppointmentController(),
-                    context.getDoctorController(),
-                    context.getHospitalizationController(),
-                    context.getPatientController()
-            );
-            this.setVisible(false);
-            patientView.setVisible(true);
+            nav.openPatientView(this, user);
         } else if (user instanceof Doctor) {
-            DoctorView doctorView = new DoctorView(
-                    user,
-                    (Doctor) user,
-                    context
-            );
-            this.setVisible(false);
-            doctorView.setVisible(true);
+            nav.openDoctorView(this, (Doctor) user);
         }
     }
 }

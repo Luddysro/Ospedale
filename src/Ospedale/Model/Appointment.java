@@ -84,6 +84,10 @@ public class Appointment implements Serializable {
         return datetime;
     }
 
+    public void setDatetime(LocalDateTime datetime) {
+        this.datetime = datetime;
+    }
+
     public boolean isType() {
         return type;
     }

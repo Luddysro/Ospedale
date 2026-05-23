@@ -9,6 +9,8 @@ import Ospedale.Controller.HospitalizationController;
 import Ospedale.Controller.LoginController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Services.AppointmentService;
+import Ospedale.Services.DoctorService;
+import Ospedale.Services.PatientService;
 
 public class AppContext {
 
@@ -25,12 +27,14 @@ public class AppContext {
         UserRepository userRepository = new UserRepository(storage);
         AppointmentRepo appointmentRepo = new AppointmentRepo(storage);
         AppointmentService appointmentService = new AppointmentService(appointmentRepo, userRepository);
+        PatientService patientService = new PatientService(userRepository);
+        DoctorService doctorService = new DoctorService(userRepository);
 
         this.loginController = new LoginController(storage);
         this.appointmentController = new AppointmentController(appointmentService);
         this.hospitalizationController = new HospitalizationController(storage);
-        this.patientController = new PatientController(storage);
-        this.doctorController = new DoctorController(storage);
+        this.patientController = new PatientController(patientService);
+        this.doctorController = new DoctorController(doctorService);
     }
 
     public Storage getStorage() {

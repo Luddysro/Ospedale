@@ -5,10 +5,13 @@
 package Ospedale.Services;
 
 import Data.UserRepository;
+import Ospedale.DTO.DoctorCreateDTO;
 import Ospedale.DTO.DoctorListDTO;
 import Ospedale.DTO.DoctorUpdateDTO;
+import Ospedale.DTO.UserOptionDTO;
 import Ospedale.Model.Specialty;
 import Ospedale.Model.User.Doctor;
+import Ospedale.Model.User.Patient;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +43,54 @@ public class DoctorService {
 
         return doctors;
     }
+
+    public List<UserOptionDTO> getPatientOptions() {
+        List<UserOptionDTO> patients = new ArrayList<>();
+
+        for (Patient patient : userRepo.findPatients()) {
+            patients.add(new UserOptionDTO(
+                    patient.getId(),
+                    patient.getFirstname() + " " + patient.getLastname()
+            ));
+        }
+
+        return patients;
+    }
+
+    public Doctor createDoctor(DoctorCreateDTO dto) {
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords don't match");
+        }
+
+        long id = parseId(dto.getId(), "Invalid doctor id");
+
+        if (userRepo.findById(id) != null) {
+            throw new IllegalArgumentException("User id already exists");
+        }
+
+        Doctor doctor = new Doctor(
+                id,
+                dto.getUsername(),
+                dto.getFirstname(),
+                dto.getLastname(),
+                dto.getPassword(),
+                parseSpecialty(dto.getSpecialty()),
+                dto.getLicenseNumber(),
+                dto.getAssignedOffice()
+        );
+
+        userRepo.save(doctor);
+        return doctor;
+    }
+
+    public Doctor getDoctorById(String value) {
+        return userRepo.findDoctorById(parseId(value, "Invalid doctor"));
+    }
+
+    public Patient getPatientById(String value) {
+        return userRepo.findPatientById(parseId(value, "Invalid patient"));
+    }
+
     public Doctor updateDoctor(DoctorUpdateDTO dto){
            if (!dto.getPassword().equals(dto.getPasswordconfirmation())) {
             throw new IllegalArgumentException("Passwords don't match");
@@ -48,7 +99,7 @@ public class DoctorService {
         Doctor doctor = userRepo.findDoctorById(dto.getId());
 
         if (doctor == null) {
-            throw new RuntimeException("Patient not found");
+            throw new RuntimeException("Doctor not found");
         }
 
         doctor.setFirstname(dto.getFirstname());
@@ -63,19 +114,23 @@ public class DoctorService {
     }
     private Specialty parseSpecialty(String specialty) {
 
-    if (specialty == null || specialty.trim().isEmpty()) {
-    return null;
+    if (specialty == null || specialty.trim().isEmpty() || "Select one".equals(specialty)) {
+        throw new IllegalArgumentException("Invalid specialty");
        }
     
     
     try {
-        return Specialty.valueOf(
-                specialty.trim().toUpperCase()
-        );
+        return Specialty.valueOf(specialty.replaceAll(" &", "").replaceAll(" ", "_").trim().toUpperCase());
     } catch (IllegalArgumentException e) {
-        throw new RuntimeException(
-                "Invalid specialty: " + specialty
-        );
+        throw new IllegalArgumentException("Invalid specialty: " + specialty);
+    }
+}
+
+private long parseId(String value, String message) {
+    try {
+        return Long.parseLong(value);
+    } catch (RuntimeException e) {
+        throw new IllegalArgumentException(message);
     }
 }
 }

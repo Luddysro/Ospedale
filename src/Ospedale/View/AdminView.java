@@ -13,6 +13,8 @@ import Ospedale.Controller.NavigationController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Controller.Utils.Response;
 import Ospedale.DTO.DoctorCreateDTO;
+import Ospedale.DTO.DoctorListDTO;
+import Ospedale.DTO.UserOptionDTO;
 import Ospedale.Model.Appointment;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.Hospitalization;
@@ -34,6 +36,7 @@ public class AdminView extends javax.swing.JFrame {
    private int x,y;
    private User user;
    private AppContext context;
+    private NavigationController navigationController;
     private AppointmentController appctrl;
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
@@ -58,6 +61,8 @@ public class AdminView extends javax.swing.JFrame {
         this.users = Storage.getInstance().getUsers();
         this.hospitalizations = Storage.getInstance().getHospitalizations();
         this.appointments = Storage.getInstance().getAppointments();
+        this.navigationController = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
+        loadSpecialtyCombo();
         loadUserCombos();
 
         this.setBackground(new Color(0, 0, 0, 0));
@@ -71,6 +76,7 @@ public class AdminView extends javax.swing.JFrame {
              context.getPatientController(),
              context.getDoctorController());
         this.context = context;
+        this.navigationController = new NavigationController(user, context);
     }
 
     public AdminView(User user) {
@@ -79,6 +85,8 @@ public class AdminView extends javax.swing.JFrame {
         this.users = Storage.getInstance().getUsers();
         this.hospitalizations = Storage.getInstance().getHospitalizations();
         this.appointments = Storage.getInstance().getAppointments();
+        this.navigationController = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
+        loadSpecialtyCombo();
         loadUserCombos();
         this.setLocationRelativeTo(null);
     }
@@ -92,6 +100,8 @@ public class AdminView extends javax.swing.JFrame {
         this.users = users;
         this.hospitalizations = hospitalizations;
         this.appointments = appointments;
+        this.navigationController = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
+        loadSpecialtyCombo();
         loadUserCombos();
         this.setLocationRelativeTo(null);
     }
@@ -505,60 +515,57 @@ public class AdminView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnDoctorViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDoctorViewActionPerformed
-        long idDoctor = Long.parseLong(cmbDoctor.getItemAt(cmbDoctor.getSelectedIndex()));
-        Doctor temp = null;
-        for(User use:this.users){
-            if(use.getId() == idDoctor)
-                temp =(Doctor) user;
+        Response response = doctrl.findDoctor(extractComboId(cmbDoctor.getItemAt(cmbDoctor.getSelectedIndex())));
+        JOptionPane.showMessageDialog(null, response.getMessage());
+        if (!response.isSuccess()) {
+            return;
         }
-        DoctorView doctor = context == null
-                ? new DoctorView(user,temp, users, hospitalizations,appointments)
-                : new DoctorView(user, temp, context);
-        this.setVisible(false);
-        doctor.setVisible(true);
+        navigationController.openDoctorView(this, (Doctor) response.getData().get("doctor"));
     }//GEN-LAST:event_btnDoctorViewActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
-        
-        BaseView login = context == null ? new BaseView() : new BaseView(context);
-        this.setVisible(false);
-        login.setVisible(true);
+        navigationController.openLogin(this);
     }//GEN-LAST:event_btnLogoutActionPerformed
 
     private void btnPatientViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPatientViewActionPerformed
-        long idPatient = Long.parseLong(cmbPatient.getItemAt(cmbPatient.getSelectedIndex()));
-        Patient temp = null;
-        for(User use:this.users){
-            if(use.getId() == idPatient)
-                temp =(Patient) use;
-        }
-        if (temp == null) {
-            JOptionPane.showMessageDialog(null, "Please select a patient");
+        Response response = doctrl.findPatient(extractComboId(cmbPatient.getItemAt(cmbPatient.getSelectedIndex())));
+        JOptionPane.showMessageDialog(null, response.getMessage());
+        if (!response.isSuccess()) {
             return;
         }
-        NavigationController nav = new NavigationController(user, appctrl, hospctrl, ptctrl, doctrl);
-        PatientView patient = context == null
-                ? new PatientView(temp, nav, appctrl, doctrl, hospctrl, ptctrl)
-                : new PatientView(temp, context, nav, appctrl, doctrl, hospctrl, ptctrl);
-        this.setVisible(false);
-        patient.setVisible(true);
+        navigationController.openPatientView(this, (Patient) response.getData().get("patient"));
     }//GEN-LAST:event_btnPatientViewActionPerformed
 
     private void loadUserCombos() {
-        if (cmbDoctor == null || cmbPatient == null || users == null) {
+        if (cmbDoctor == null || cmbPatient == null || doctrl == null) {
             return;
         }
         cmbDoctor.removeAllItems();
         cmbPatient.removeAllItems();
-        cmbDoctor.addItem("0");
-        cmbPatient.addItem("0");
-        for (User item : users) {
-            if (item instanceof Doctor) {
-                cmbDoctor.addItem(String.valueOf(item.getId()));
-            } else if (item instanceof Patient) {
-                cmbPatient.addItem(String.valueOf(item.getId()));
-            }
+        cmbDoctor.addItem("Select one");
+        cmbPatient.addItem("Select one");
+        for (DoctorListDTO doctor : doctrl.getDoctorList()) {
+            cmbDoctor.addItem(doctor.toString());
         }
+        for (UserOptionDTO patient : doctrl.getPatientOptions()) {
+            cmbPatient.addItem(patient.toString());
+        }
+    }
+
+    private void loadSpecialtyCombo() {
+        if (jComboBox1 == null) {
+            return;
+        }
+        jComboBox1.removeAllItems();
+        jComboBox1.addItem("Select one");
+        for (Specialty specialty : Specialty.values()) {
+            jComboBox1.addItem(specialty.name().replace("_", " "));
+        }
+    }
+
+    private String extractComboId(String value) {
+        int separator = value.indexOf(" - ");
+        return separator < 0 ? value : value.substring(0, separator);
     }
 
     private void clearDoctorFields() {
