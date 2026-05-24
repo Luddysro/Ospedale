@@ -4,8 +4,14 @@
  */
 package Ospedale.Controller;
 
+import Ospedale.AppContext;
 import Ospedale.Model.User.User;
+import Ospedale.Model.User.Doctor;
+import Ospedale.Model.User.Administrator;
 import Ospedale.View.AdminView;
+import Ospedale.View.BaseView;
+import Ospedale.View.DoctorView;
+import Ospedale.View.PatientView;
 import javax.swing.JFrame;
 
 /**
@@ -19,6 +25,7 @@ public class NavigationController {
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
     private DoctorController doctrl;
+    private AppContext context;
 
     public NavigationController(User user,
                                 AppointmentController appctrl,
@@ -32,11 +39,53 @@ public class NavigationController {
         this.doctrl = doctrl;
     }
 
+    public NavigationController(User user, AppContext context) {
+        this(user,
+             context.getAppointmentController(),
+             context.getHospitalizationController(),
+             context.getPatientController(),
+             context.getDoctorController());
+        this.context = context;
+    }
+
     public void openAdminView(JFrame current) {
 
         current.setVisible(false);
 
-        AdminView admin = new AdminView(user, appctrl, hospctrl, ptctrl, doctrl);
+        AdminView admin = context == null ? new AdminView(user, appctrl, hospctrl, ptctrl, doctrl) : new AdminView(user, context);
         admin.setVisible(true);
+    }
+
+    public void openPatientView(JFrame current, User patient) {
+        current.setVisible(false);
+
+        PatientView patientView = context == null
+                ? new PatientView(patient, this, appctrl, doctrl, hospctrl, ptctrl)
+                : new PatientView(patient, context, this, appctrl, doctrl, hospctrl, ptctrl);
+        patientView.setVisible(true);
+    }
+
+    public void openDoctorView(JFrame current, DoctorView doctorView) {
+        current.setVisible(false);
+        doctorView.setVisible(true);
+    }
+
+    public void openDoctorView(JFrame current, Doctor doctor) {
+        current.setVisible(false);
+
+        DoctorView doctorView = context == null
+                ? new DoctorView(user, doctor, new java.util.ArrayList<>(), new java.util.ArrayList<>(), new java.util.ArrayList<>())
+                : new DoctorView(user, doctor, context);
+        doctorView.setVisible(true);
+    }
+
+    public void openLogin(JFrame current) {
+        current.setVisible(false);
+        BaseView login = context == null ? new BaseView() : new BaseView(context);
+        login.setVisible(true);
+    }
+
+    public boolean canReturnToAdmin() {
+        return user instanceof Administrator;
     }
 }

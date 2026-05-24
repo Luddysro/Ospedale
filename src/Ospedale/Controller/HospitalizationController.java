@@ -42,4 +42,13 @@ public class HospitalizationController {
             return new Response(e.getMessage(), Status.NOT_FOUND);
         }
     }
+
+    public Response cancelHospitalization(String id) {
+        try {
+            hospitalizationService.cancelHospitalization(id);
+            return new Response("Hospitalization canceled", Status.OK);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+    }
 }

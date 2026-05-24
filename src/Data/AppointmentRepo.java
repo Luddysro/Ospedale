@@ -35,6 +35,18 @@ public List<Appointment> findByPatientId(long id) {
 
     return list;
 }
+
+public List<Appointment> findByDoctorId(long id) {
+    List<Appointment> list = new ArrayList<>();
+
+    for (Appointment a : storage.getAppointments()) {
+        if (a.getDoctor().getId() == id) {
+            list.add(a);
+        }
+    }
+
+    return list;
+}
 public List<Appointment> findAll() {
     return new ArrayList<>(storage.getAppointments());
 }

@@ -8,6 +8,7 @@ import Data.HospitalizationRepository;
 import Data.UserRepository;
 import Ospedale.DTO.CreateHospitalizationDTO;
 import Ospedale.Model.Hospitalization;
+import Ospedale.Model.HospitalizationStatus;
 import Ospedale.Model.RoomType;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
@@ -52,6 +53,16 @@ public class HospitalizationService {
 
         hospitalizationRepo.save(hospitalization);
         return hospitalization;
+    }
+
+    public void cancelHospitalization(String id) {
+        Hospitalization hospitalization = hospitalizationRepo.findById(id);
+
+        if (hospitalization == null) {
+            throw new RuntimeException("Hospitalization not found");
+        }
+
+        hospitalization.setStatus(HospitalizationStatus.CANCELED);
     }
 
     private long parseId(String value, String message) {

@@ -4,6 +4,7 @@
  */
 package Ospedale.View;
 
+import Ospedale.AppContext;
 import Ospedale.Controller.AppointmentController;
 import Ospedale.Controller.DoctorController;
 import Ospedale.Controller.HospitalizationController;
@@ -39,38 +40,47 @@ import javax.swing.table.DefaultTableModel;
 public class PatientView extends javax.swing.JFrame {
 
     private int x, y;
-    private User currentUser;
-    private Patient selectedPatient;
+    private User user;
+    private AppContext context;
+    private Response response;
     private NavigationController nav;
     private AppointmentController appctrl;
     private HospitalizationController hospctrl;
     private PatientController ptctrl;
     private DoctorController doctrl;
 
-public PatientView(User user, NavigationController nav, AppointmentController appctrl, DoctorController doctrl,
-HospitalizationController hospctrl, PatientController ptctrl) {
-
-    this(user, user instanceof Patient ? (Patient) user : null, nav, appctrl, doctrl, hospctrl, ptctrl);
-}
-
-public PatientView(User currentUser, Patient selectedPatient, NavigationController nav,
-AppointmentController appctrl, DoctorController doctrl, HospitalizationController hospctrl,
-PatientController ptctrl) {
+public PatientView(User user,
+                   NavigationController nav,
+                   AppointmentController appctrl,
+                   DoctorController doctrl,
+                   HospitalizationController hospctrl,
+                   PatientController ptctrl) {
 
     initComponents();
 
-    this.currentUser = currentUser;
-    this.selectedPatient = selectedPatient;
+    this.user = user;
     this.nav = nav;
     this.appctrl = appctrl;
     this.doctrl = doctrl;
     this.hospctrl = hospctrl;
     this.ptctrl = ptctrl;
 
-    lblBack.setVisible(currentUser instanceof Administrator);
+    lblBack.setVisible(nav != null && nav.canReturnToAdmin());
     loadInitialData();
 
     this.setLocationRelativeTo(null);
+}
+
+public PatientView(User user,
+                   AppContext context,
+                   NavigationController nav,
+                   AppointmentController appctrl,
+                   DoctorController doctrl,
+                   HospitalizationController hospctrl,
+                   PatientController ptctrl) {
+
+    this(user, nav, appctrl, doctrl, hospctrl, ptctrl);
+    this.context = context;
 }
 
     /**
@@ -807,34 +817,36 @@ PatientController ptctrl) {
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         String idAppointment = cmbID.getItemAt(cmbID.getSelectedIndex());
-        Response response = appctrl.cancelAppointment(idAppointment);
+       Response response = appctrl.cancelAppointment(idAppointment);
         JOptionPane.showMessageDialog(null, response.getMessage());
-
         if (response.isSuccess()) {
-            loadAppointments();
+            loadAppointmentsTable();
             loadAppointmentIds();
         }
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        try {
-            PatientUpdateDTO dto = buildPatientUpdateDTO();
-            Response response = ptctrl.updatePatient(dto);
-            JOptionPane.showMessageDialog(null, response.getMessage());
-
-            if (response.isSuccess()) {
-                clearPasswordFields();
-                loadPatientInfo();
-            }
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(null, "Please check the patient information");
+      
+        String firstname = txtFirstName.getText();
+        String lastname = txtLastName.getText();
+        String gender = cmbGender.getItemAt(cmbGender.getSelectedIndex());
+        String birthdate = txtBirthdate.getText();
+        String address = txtAddress.getText();
+        String phone = txtPhone.getText();
+        String email = txtEmail.getText();
+        String username = txtUser.getText();
+        String password = txtPassword.getText();
+        String comPassword = txtPasswordConfirmation.getText();
+        PatientUpdateDTO dto = new PatientUpdateDTO(user.getId(), firstname, lastname, gender, birthdate, address, phone, email, username, password, comPassword);
+        Response response = ptctrl.updatePatient(dto);
+        JOptionPane.showMessageDialog(null, response.getMessage());
+        if (response.isSuccess()) {
+            clearPatientForm();
         }
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
-        BaseView login = new BaseView();
-        this.setVisible(false);
-        login.setVisible(true);
+        nav.openLogin(this);
     }//GEN-LAST:event_btnLogoutActionPerformed
 
     private void lblBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lblBackActionPerformed
@@ -870,77 +882,101 @@ for (DoctorListDTO doctor : doctrl.getDoctorList()) {
 
     private void btnCreateAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateAppointmentActionPerformed
 
-    try {
-        AppointmentCreateDTO dto = buildAppointmentCreateDTO();
-        Response response = appctrl.createAppointment(dto);
-        JOptionPane.showMessageDialog(null, response.getMessage());
+    AppointmentCreateDTO dto = new AppointmentCreateDTO(
+        user.getId(),
+        extractComboId(cmbTypeRequest.getItemAt(cmbTypeRequest.getSelectedIndex())),
+        txtAppointmentDate.getText(),
+        txtAppointmentTime.getText(),
+        txtAppointmentReason.getText(),
+        cmbAppointmentType.getItemAt(cmbAppointmentType.getSelectedIndex())
+    );
 
-        if (response.isSuccess()) {
-            clearAppointmentFields();
-            loadAppointments();
-            loadAppointmentIds();
-        }
-    } catch (RuntimeException e) {
-        JOptionPane.showMessageDialog(null, "Please check the appointment information");
+    Response response = appctrl.createAppointment(dto);
+
+    JOptionPane.showMessageDialog(null, response.getMessage());
+    if (response.isSuccess()) {
+        clearAppointmentForm();
+        btnRefreshActionPerformed(evt);
     }
 
     }//GEN-LAST:event_btnCreateAppointmentActionPerformed
 
 
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
-
-    loadAppointments();
+    loadAppointmentsTable();
     loadAppointmentIds();
     }//GEN-LAST:event_btnRefreshActionPerformed
 
     private void btnCreateHospitalizationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateHospitalizationActionPerformed
-        try {
-            String hospitalizationReason = txtHospitalizationReason.getText();
-            String observations = txtObservationsHospitalization.getText();
-            CreateHospitalizationDTO dto = new CreateHospitalizationDTO(
-                    selectedPatient.getId(),
-                    extractComboId(cmbAttendingDoctor.getItemAt(cmbAttendingDoctor.getSelectedIndex())),
-                    txtDateAdmission.getText(),
-                    hospitalizationReason,
-                    cmbRoomType.getItemAt(cmbRoomType.getSelectedIndex()),
-                    observations
-            );
-            Response response = hospctrl.createHospitalization(dto);
-            JOptionPane.showMessageDialog(null, response.getMessage());
-
-            if (response.isSuccess()) {
-                clearHospitalizationFields();
-            }
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(null, "Please check the hospitalization information");
-        }
+        String hospitalizationReason = txtHospitalizationReason.getText();
+        String observations = txtObservationsHospitalization.getText();
+        CreateHospitalizationDTO dto = new CreateHospitalizationDTO(
+                user.getId(),
+                extractComboId(cmbAttendingDoctor.getItemAt(cmbAttendingDoctor.getSelectedIndex())),
+                txtDateAdmission.getText(),
+                hospitalizationReason,
+                cmbRoomType.getItemAt(cmbRoomType.getSelectedIndex()),
+                observations
+        );
+        Response response = hospctrl.createHospitalization(dto);
+    JOptionPane.showMessageDialog(null, response.getMessage());
+    if (response.isSuccess()) {
+        clearHospitalizationForm();
+    }
     }//GEN-LAST:event_btnCreateHospitalizationActionPerformed
+
+    private String extractComboId(String value) {
+        int separator = value.indexOf(" - ");
+        return separator < 0 ? value : value.substring(0, separator);
+    }
+
+    private void clearPatientForm() {
+        txtPassword.setText("");
+        txtPasswordConfirmation.setText("");
+    }
+
+    private void clearAppointmentForm() {
+        txtAppointmentDate.setText("");
+        txtAppointmentTime.setText("");
+        txtAppointmentReason.setText("");
+        cmbAppointmentType.setSelectedIndex(0);
+    }
+
+    private void clearHospitalizationForm() {
+        txtHospitalizationReason.setText("");
+        txtDateAdmission.setText("");
+        txtObservationsHospitalization.setText("");
+        cmbAttendingDoctor.setSelectedIndex(0);
+        cmbRoomType.setSelectedIndex(0);
+    }
 
     private void loadInitialData() {
         loadPatientInfo();
-        loadDoctors();
+        loadDoctorCombos();
         loadRoomTypes();
-        loadAppointments();
+        loadAppointmentsTable();
         loadAppointmentIds();
     }
 
     private void loadPatientInfo() {
-        if (selectedPatient == null) {
+        if (!(user instanceof Patient)) {
             return;
         }
 
-        txtFirstName.setText(nullToEmpty(selectedPatient.getFirstname()));
-        txtLastName.setText(nullToEmpty(selectedPatient.getLastname()));
-        txtBirthdate.setText(selectedPatient.getBirthdate() == null ? "" : selectedPatient.getBirthdate().toString());
-        cmbGender.setSelectedIndex(selectedPatient.isGender() ? 1 : 2);
-        txtEmail.setText(nullToEmpty(selectedPatient.getEmail()));
-        txtPhone.setText(selectedPatient.getPhone() == 0 ? "" : String.valueOf(selectedPatient.getPhone()));
-        txtAddress.setText(nullToEmpty(selectedPatient.getAddress()));
-        txtUser.setText(nullToEmpty(selectedPatient.getUsername()));
-        clearPasswordFields();
+        Patient patient = (Patient) user;
+        txtFirstName.setText(nullToEmpty(patient.getFirstname()));
+        txtLastName.setText(nullToEmpty(patient.getLastname()));
+        txtBirthdate.setText(patient.getBirthdate() == null ? "" : patient.getBirthdate().toString());
+        cmbGender.setSelectedIndex(patient.isGender() ? 1 : 2);
+        txtEmail.setText(nullToEmpty(patient.getEmail()));
+        txtPhone.setText(patient.getPhone() == 0 ? "" : String.valueOf(patient.getPhone()));
+        txtAddress.setText(nullToEmpty(patient.getAddress()));
+        txtUser.setText(nullToEmpty(patient.getUsername()));
+        txtPassword.setText("");
+        txtPasswordConfirmation.setText("");
     }
 
-    private void loadDoctors() {
+    private void loadDoctorCombos() {
         cmbAttendingDoctor.removeAllItems();
         cmbAttendingDoctor.addItem("Select one");
 
@@ -958,24 +994,20 @@ for (DoctorListDTO doctor : doctrl.getDoctorList()) {
         }
     }
 
-    private void loadAppointments() {
+    private void loadAppointmentsTable() {
         DefaultTableModel model = (DefaultTableModel) tblInformation.getModel();
         model.setRowCount(0);
 
-        if (selectedPatient == null) {
-            return;
-        }
-
-        List<AppointmentTableDTO> list = appctrl.getPatientAppointments(selectedPatient.getId());
+        List<AppointmentTableDTO> list = appctrl.getPatientAppointments(user.getId());
 
         for (AppointmentTableDTO dto : list) {
             model.addRow(new Object[]{
-                dto.getId(),
-                dto.getDatetime(),
-                dto.getDoctorName(),
-                dto.getSpecialty(),
-                dto.getType(),
-                dto.getStatus()
+                dto.id,
+                dto.datetime,
+                dto.doctorName,
+                dto.specialty,
+                dto.type,
+                dto.status
             });
         }
     }
@@ -984,73 +1016,17 @@ for (DoctorListDTO doctor : doctrl.getDoctorList()) {
         cmbID.removeAllItems();
         cmbID.addItem("Select one");
 
-        if (selectedPatient == null) {
-            return;
-        }
-
-        List<AppointmentTableDTO> list = appctrl.getPatientAppointments(selectedPatient.getId());
+        List<AppointmentTableDTO> list = appctrl.getPatientAppointments(user.getId());
 
         for (AppointmentTableDTO dto : list) {
-            cmbID.addItem(dto.getId());
+            cmbID.addItem(dto.id);
         }
-    }
-
-    private PatientUpdateDTO buildPatientUpdateDTO() {
-        return new PatientUpdateDTO(
-                selectedPatient.getId(),
-                txtFirstName.getText(),
-                txtLastName.getText(),
-                cmbGender.getItemAt(cmbGender.getSelectedIndex()),
-                txtBirthdate.getText(),
-                txtAddress.getText(),
-                txtPhone.getText(),
-                txtEmail.getText(),
-                txtUser.getText(),
-                txtPassword.getText(),
-                txtPasswordConfirmation.getText()
-        );
-    }
-
-    private AppointmentCreateDTO buildAppointmentCreateDTO() {
-        return new AppointmentCreateDTO(
-                selectedPatient.getId(),
-                extractComboId(cmbTypeRequest.getItemAt(cmbTypeRequest.getSelectedIndex())),
-                txtAppointmentDate.getText(),
-                txtAppointmentTime.getText(),
-                txtAppointmentReason.getText(),
-                cmbAppointmentType.getItemAt(cmbAppointmentType.getSelectedIndex())
-        );
-    }
-
-    private String extractComboId(String value) {
-        int separator = value.indexOf(" - ");
-        return separator < 0 ? value : value.substring(0, separator);
     }
 
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
     }
 
-    private void clearPasswordFields() {
-        txtPassword.setText("");
-        txtPasswordConfirmation.setText("");
-    }
-
-    private void clearAppointmentFields() {
-        cmbTypeRequest.setSelectedIndex(0);
-        txtAppointmentDate.setText("");
-        txtAppointmentTime.setText("");
-        txtAppointmentReason.setText("");
-        cmbAppointmentType.setSelectedIndex(0);
-    }
-
-    private void clearHospitalizationFields() {
-        txtHospitalizationReason.setText("");
-        cmbAttendingDoctor.setSelectedIndex(0);
-        txtDateAdmission.setText("");
-        cmbRoomType.setSelectedIndex(0);
-        txtObservationsHospitalization.setText("");
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
