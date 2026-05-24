@@ -17,7 +17,7 @@ public class Prescription implements Serializable {
 
     public Prescription(Appointment appointment, String medicationName, double dose, String administrationRoute, int treatmentDuration, String additionalInstructions, int frecuency) {
         this.appointment = appointment;
-        appointment.addPrescription(this);
+       
         this.medicationName = medicationName;
         this.dose = dose;
         this.administrationRoute = administrationRoute;
@@ -36,7 +36,7 @@ public class Prescription implements Serializable {
      data.put("administrationRoute",administrationRoute);        
      data.put("treatmentDuration",treatmentDuration);        
      data.put("additionalInstructions",additionalInstructions);        
-     data.put("frecuency",frecuency);  
+     data.put("frequency",frecuency);  
      
      return data;
     }

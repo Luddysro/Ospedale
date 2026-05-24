@@ -32,6 +32,7 @@ public List<Appointment> findByPatientId(long id) {
             list.add(a);
         }
     }
+    list.sort((a1, a2) -> a2.getDatetime().compareTo(a1.getDatetime()));
 
     return list;
 }
@@ -44,6 +45,7 @@ public List<Appointment> findByDoctorId(long id) {
             list.add(a);
         }
     }
+    list.sort((a1, a2) -> a2.getDatetime().compareTo(a1.getDatetime()));
 
     return list;
 }

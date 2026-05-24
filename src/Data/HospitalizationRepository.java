@@ -44,4 +44,17 @@ public class HospitalizationRepository {
 
         return hospitalizations;
     }
+    
+    public List<Hospitalization> findByPatient(long id){
+        List<Hospitalization> hospitalizations = new ArrayList<>();
+        
+        for (Hospitalization hospitalization : storage.getHospitalizations()){
+            if (hospitalization.getPatient().getId()== id){
+            hospitalizations.add(hospitalization);
+            }
+            
+           
+        }
+         return hospitalizations;
+    }
 }

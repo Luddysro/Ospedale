@@ -86,4 +86,31 @@ public class UserRepository {
 
         return patients;
     }
+    
+    public User findUsername(String username){
+        for (User user :storage.getUsers()){
+            if (user.getUsername().equals(username)){
+                return user;
+            }
+        }
+        return null;
+    }
+    
+    public boolean existsById(long id) {
+        return findById(id) != null;
+    }
+    
+    public boolean existsByUsername(String username) {
+        return findUsername(username) != null;
+    }
+    
+    public boolean existsUsernameForAnotherUser(String username, long currentUserId) {
+        for (User user : storage.getUsers()) {
+            if (user.getUsername().equals(username) && user.getId() != currentUserId) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }

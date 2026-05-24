@@ -10,6 +10,7 @@ import Ospedale.Controller.LoginController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Services.AppointmentService;
 import Ospedale.Services.DoctorService;
+import Ospedale.Services.LoginService;
 import Ospedale.Services.PatientService;
 
 public class AppContext {
@@ -29,8 +30,8 @@ public class AppContext {
         AppointmentService appointmentService = new AppointmentService(appointmentRepo, userRepository);
         PatientService patientService = new PatientService(userRepository);
         DoctorService doctorService = new DoctorService(userRepository);
-
-        this.loginController = new LoginController(storage);
+        LoginService loginService = new LoginService(userRepository);
+        this.loginController = new LoginController(loginService);
         this.appointmentController = new AppointmentController(appointmentService);
         this.hospitalizationController = new HospitalizationController(storage);
         this.patientController = new PatientController(patientService);

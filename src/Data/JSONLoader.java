@@ -23,7 +23,7 @@ public class JSONLoader {
         Storage storage = Storage.getInstance();
 
         try {
-            String content = new String(Files.readAllBytes(Paths.get("src/Data/users.json")));
+            String content = new String(Files.readAllBytes(Paths.get("json/users.json")));
 
             JSONObject root = new JSONObject(content);
             JSONArray usersArray = root.getJSONArray("users");

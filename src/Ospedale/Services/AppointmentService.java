@@ -62,7 +62,7 @@ public Appointment createAppointment(AppointmentCreateDTO dto) {
     );
 
     appointmentRepo.save(app);
-    patient.addAppointment(app);
+    
 
     return app;
 }
