@@ -4,7 +4,7 @@
  */
 package Data;
 
-import Ospedale.Model.Hospitalization;
+import Ospedale.Model.Hospitalization.Hospitalization;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +22,11 @@ public class HospitalizationRepository {
 
     public void save(Hospitalization hospitalization) {
         storage.getHospitalizations().add(hospitalization);
+        storage.notifyModelChanged("hospitalizations");
+    }
+
+    public void update(Hospitalization hospitalization) {
+        storage.notifyModelChanged("hospitalizations");
     }
 
     public Hospitalization findById(String id) {

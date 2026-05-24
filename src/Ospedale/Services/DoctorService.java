@@ -62,11 +62,13 @@ public class DoctorService {
             throw new IllegalArgumentException("Passwords don't match");
         }
 
-        long id = parseId(dto.getId(), "Invalid doctor id");
+        long id = parseUserId(dto.getId(), "Invalid doctor id");
 
         if (userRepo.findById(id) != null) {
             throw new IllegalArgumentException("User id already exists");
         }
+        validateUniqueUsername(dto.getUsername(), id);
+        validateDoctorFields(dto.getLicenseNumber(), dto.getAssignedOffice());
 
         Doctor doctor = new Doctor(
                 id,
@@ -101,6 +103,8 @@ public class DoctorService {
         if (doctor == null) {
             throw new RuntimeException("Doctor not found");
         }
+        validateUniqueUsername(dto.getUsername(), dto.getId());
+        validateDoctorFields(dto.getLicenceNumber(), dto.getAssignedOffice());
 
         doctor.setFirstname(dto.getFirstname());
         doctor.setLastname(dto.getLastname());
@@ -108,7 +112,10 @@ public class DoctorService {
         doctor.setLicenceNumber(dto.getLicenceNumber());
         doctor.setSpecialty(parseSpecialty(dto.getSpecialty())); 
         doctor.setUsername(dto.getUsername());
-        doctor.setPassword(dto.getPassword());
+        if (!dto.getPassword().isEmpty()) {
+            doctor.setPassword(dto.getPassword());
+        }
+        userRepo.update(doctor);
 
         return doctor;
     }
@@ -131,6 +138,35 @@ private long parseId(String value, String message) {
         return Long.parseLong(value);
     } catch (RuntimeException e) {
         throw new IllegalArgumentException(message);
+    }
+}
+
+private long parseUserId(String value, String message) {
+    if (value == null || !value.matches("\\d{12}")) {
+        throw new IllegalArgumentException(message);
+    }
+    long id = parseId(value, message);
+    if (id <= 0) {
+        throw new IllegalArgumentException(message);
+    }
+    return id;
+}
+
+private void validateUniqueUsername(String username, long currentUserId) {
+    if (username == null || username.trim().isEmpty()) {
+        throw new IllegalArgumentException("Invalid username");
+    }
+    if (userRepo.existsUsernameForAnotherUser(username, currentUserId)) {
+        throw new IllegalArgumentException("Username already exists");
+    }
+}
+
+private void validateDoctorFields(String licenseNumber, String assignedOffice) {
+    if (licenseNumber == null || !licenseNumber.matches("L-\\d{10} MTL")) {
+        throw new IllegalArgumentException("Invalid license number");
+    }
+    if (assignedOffice == null || !assignedOffice.matches("O-\\d{3}")) {
+        throw new IllegalArgumentException("Invalid assigned office");
     }
 }
 }

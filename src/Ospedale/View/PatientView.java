@@ -17,10 +17,10 @@ import Ospedale.DTO.CreateHospitalizationDTO;
 import Ospedale.DTO.DoctorListDTO;
 import Ospedale.DTO.PatientUpdateDTO;
 import Ospedale.Model.User.Administrator;
-import Ospedale.Model.Appointment;
-import Ospedale.Model.AppointmentStatus;
+import Ospedale.Model.Appointment.Appointment;
+import Ospedale.Model.Appointment.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
-import Ospedale.Model.Hospitalization;
+import Ospedale.Model.Hospitalization.Hospitalization;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.RoomType;
 import Ospedale.Model.Specialty;
@@ -81,6 +81,7 @@ public PatientView(User user,
 
     this(user, nav, appctrl, doctrl, hospctrl, ptctrl);
     this.context = context;
+    registerObservers();
 }
 
     /**
@@ -956,6 +957,21 @@ for (DoctorListDTO doctor : doctrl.getDoctorList()) {
         loadRoomTypes();
         loadAppointmentsTable();
         loadAppointmentIds();
+    }
+
+    private void registerObservers() {
+        if (context == null) {
+            return;
+        }
+        context.getStorage().addModelChangeListener(modelName -> {
+            if ("appointments".equals(modelName) || "hospitalizations".equals(modelName) || "users".equals(modelName)) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    loadDoctorCombos();
+                    loadAppointmentsTable();
+                    loadAppointmentIds();
+                });
+            }
+        });
     }
 
     private void loadPatientInfo() {

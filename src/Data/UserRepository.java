@@ -52,6 +52,11 @@ public class UserRepository {
 
     public void save(User user) {
         storage.getUsers().add(user);
+        storage.notifyModelChanged("users");
+    }
+
+    public void update(User user) {
+        storage.notifyModelChanged("users");
     }
 
     public User findById(long id) {

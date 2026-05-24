@@ -15,9 +15,9 @@ import Ospedale.Controller.Utils.Response;
 import Ospedale.DTO.DoctorCreateDTO;
 import Ospedale.DTO.DoctorListDTO;
 import Ospedale.DTO.UserOptionDTO;
-import Ospedale.Model.Appointment;
+import Ospedale.Model.Appointment.Appointment;
 import Ospedale.Model.User.Doctor;
-import Ospedale.Model.Hospitalization;
+import Ospedale.Model.Hospitalization.Hospitalization;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.Specialty;
 import Ospedale.Model.User.User;
@@ -77,6 +77,7 @@ public class AdminView extends javax.swing.JFrame {
              context.getDoctorController());
         this.context = context;
         this.navigationController = new NavigationController(user, context);
+        registerObservers();
     }
 
     public AdminView(User user) {
@@ -140,7 +141,7 @@ public class AdminView extends javax.swing.JFrame {
         txtPassword = new javax.swing.JTextField();
         lblPasswordConfirmation = new javax.swing.JLabel();
         txtPasswordConfirmation = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cmbDoctorSpecialtyRegistration = new javax.swing.JComboBox<>();
         btnSave = new javax.swing.JButton();
         sSeparator = new javax.swing.JSeparator();
         cmbDoctor = new javax.swing.JComboBox<>();
@@ -260,8 +261,8 @@ public class AdminView extends javax.swing.JFrame {
 
         txtPasswordConfirmation.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
 
-        jComboBox1.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one", "General Medicine", "Cardiology", "Pediatrics", "Neurology", "Traumatology & Orthopedics", "Gynecology & Obstetrics", "Dermatology", "Psychiatry", "Oncology", "Ophthalmology", "Internal Medicine" }));
+        cmbDoctorSpecialtyRegistration.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        cmbDoctorSpecialtyRegistration.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one", "General Medicine", "Cardiology", "Pediatrics", "Neurology", "Traumatology & Orthopedics", "Gynecology & Obstetrics", "Dermatology", "Psychiatry", "Oncology", "Ophthalmology", "Internal Medicine" }));
 
         btnSave.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         btnSave.setText("Save");
@@ -315,7 +316,7 @@ public class AdminView extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addGroup(pnlrContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(pnlrContainerLayout.createSequentialGroup()
-                                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(cmbDoctorSpecialtyRegistration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(18, 18, 18)
                                         .addComponent(lblLicense)
                                         .addGap(18, 18, 18)
@@ -397,7 +398,7 @@ public class AdminView extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(pnlrContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblSpecialty)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbDoctorSpecialtyRegistration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblLicense)
                     .addComponent(txtLicense, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
@@ -502,11 +503,11 @@ public class AdminView extends javax.swing.JFrame {
                 txtUser.getText(),
                 txtPassword.getText(),
                 txtPasswordConfirmation.getText(),
-                jComboBox1.getItemAt(jComboBox1.getSelectedIndex()),
+                cmbDoctorSpecialtyRegistration.getItemAt(cmbDoctorSpecialtyRegistration.getSelectedIndex()),
                 txtLicense.getText(),
                 txtAssignedOffice.getText()
         );
-        Response response = doctrl.createDoctor(dto);
+        Response response = doctrl.createDoctor(dto, user);
         JOptionPane.showMessageDialog(null, response.getMessage());
         if (response.isSuccess()) {
             clearDoctorFields();
@@ -520,7 +521,7 @@ public class AdminView extends javax.swing.JFrame {
         if (!response.isSuccess()) {
             return;
         }
-        navigationController.openDoctorView(this, (Doctor) response.getData().get("doctor"));
+        navigationController.openDoctorViewById(this, ((Number) response.getData().get("doctorId")).longValue());
     }//GEN-LAST:event_btnDoctorViewActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
@@ -533,7 +534,7 @@ public class AdminView extends javax.swing.JFrame {
         if (!response.isSuccess()) {
             return;
         }
-        navigationController.openPatientView(this, (Patient) response.getData().get("patient"));
+        navigationController.openPatientViewById(this, ((Number) response.getData().get("patientId")).longValue());
     }//GEN-LAST:event_btnPatientViewActionPerformed
 
     private void loadUserCombos() {
@@ -552,14 +553,25 @@ public class AdminView extends javax.swing.JFrame {
         }
     }
 
-    private void loadSpecialtyCombo() {
-        if (jComboBox1 == null) {
+    private void registerObservers() {
+        if (context == null) {
             return;
         }
-        jComboBox1.removeAllItems();
-        jComboBox1.addItem("Select one");
+        context.getStorage().addModelChangeListener(modelName -> {
+            if ("users".equals(modelName)) {
+                javax.swing.SwingUtilities.invokeLater(() -> loadUserCombos());
+            }
+        });
+    }
+
+    private void loadSpecialtyCombo() {
+        if (cmbDoctorSpecialtyRegistration == null) {
+            return;
+        }
+        cmbDoctorSpecialtyRegistration.removeAllItems();
+        cmbDoctorSpecialtyRegistration.addItem("Select one");
         for (Specialty specialty : Specialty.values()) {
-            jComboBox1.addItem(specialty.name().replace("_", " "));
+            cmbDoctorSpecialtyRegistration.addItem(specialty.name().replace("_", " "));
         }
     }
 
@@ -572,7 +584,7 @@ public class AdminView extends javax.swing.JFrame {
         txtFirstName.setText("");
         txtLastName.setText("");
         txtID.setText("");
-        jComboBox1.setSelectedIndex(0);
+        cmbDoctorSpecialtyRegistration.setSelectedIndex(0);
         txtLicense.setText("");
         txtAssignedOffice.setText("");
         txtUser.setText("");
@@ -588,7 +600,7 @@ public class AdminView extends javax.swing.JFrame {
     private javax.swing.JButton btnX;
     private javax.swing.JComboBox<String> cmbDoctor;
     private javax.swing.JComboBox<String> cmbPatient;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> cmbDoctorSpecialtyRegistration;
     private javax.swing.JLabel lblAdminView;
     private javax.swing.JLabel lblAssignedOffice;
     private javax.swing.JLabel lblDoctor;

@@ -14,6 +14,7 @@ public class Main {
 
     public static void main(String[] args) {
         System.setProperty("flatlaf.useNativeLibrary", "false");
+        System.setProperty("flatlaf.uiScale", "1x");
 
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf());

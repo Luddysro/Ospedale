@@ -4,10 +4,11 @@
  */
 package Data;
 
-import Ospedale.Model.Appointment;
-import Ospedale.Model.Hospitalization;
+import Ospedale.Model.Appointment.Appointment;
+import Ospedale.Model.Hospitalization.Hospitalization;
 import Ospedale.Model.User.User;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Storage {
 
@@ -16,12 +17,14 @@ public class Storage {
     private ArrayList<User> users;
     private ArrayList<Appointment> appointments;
     private ArrayList<Hospitalization> hospitalizations;
+    private ArrayList<ModelChangeListener> listeners;
 
     private Storage() {
 
         users = new ArrayList<>();
         appointments = new ArrayList<>();
         hospitalizations = new ArrayList<>();
+        listeners = new ArrayList<>();
     }
 
     public static Storage getInstance() {
@@ -43,5 +46,18 @@ public class Storage {
 
     public ArrayList<Hospitalization> getHospitalizations() {
         return hospitalizations;
+    }
+
+    public void addModelChangeListener(ModelChangeListener listener) {
+        if (listener != null && !listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    public void notifyModelChanged(String modelName) {
+        List<ModelChangeListener> snapshot = new ArrayList<>(listeners);
+        for (ModelChangeListener listener : snapshot) {
+            listener.onModelChanged(modelName);
+        }
     }
 }

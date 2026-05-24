@@ -15,11 +15,11 @@ import Ospedale.DTO.CreateHospitalizationDTO;
 import Ospedale.DTO.DoctorUpdateDTO;
 import Ospedale.DTO.UserOptionDTO;
 import Ospedale.Model.User.Administrator;
-import Ospedale.Model.Appointment;
-import Ospedale.Model.AppointmentStatus;
+import Ospedale.Model.Appointment.Appointment;
+import Ospedale.Model.Appointment.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
-import Ospedale.Model.Hospitalization;
-import Ospedale.Model.HospitalizationStatus;
+import Ospedale.Model.Hospitalization.Hospitalization;
+import Ospedale.Model.Hospitalization.HospitalizationStatus;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.Prescription;
 import Ospedale.Model.RoomType;
@@ -86,6 +86,7 @@ public class DoctorView extends javax.swing.JFrame {
         this.hospctrl = context.getHospitalizationController();
         this.doctrl = context.getDoctorController();
         this.navigationController = new NavigationController(user, context);
+        registerObservers();
         loadInitialData();
     }
 
@@ -133,14 +134,14 @@ public class DoctorView extends javax.swing.JFrame {
         lblPasswordConfirmation = new javax.swing.JLabel();
         txtPasswordConfirmation = new javax.swing.JTextField();
         cmbSpecialty = new javax.swing.JComboBox<>();
-        BtnSave = new javax.swing.JButton();
+        btnSaveDoctorInfo = new javax.swing.JButton();
         pnlRequest = new javax.swing.JPanel();
         lblID = new javax.swing.JLabel();
         lblAccept = new javax.swing.JLabel();
         cmbID = new javax.swing.JComboBox<>();
         sSeparator = new javax.swing.JSeparator();
         btnAccept = new javax.swing.JButton();
-        jLabel15 = new javax.swing.JLabel();
+        lblRescheduleAppointmentTitle = new javax.swing.JLabel();
         lblAppointmentReschedule = new javax.swing.JLabel();
         cmbAppointmentReschedule = new javax.swing.JComboBox<>();
         btnAcceptReschedule = new javax.swing.JButton();
@@ -450,11 +451,11 @@ public class DoctorView extends javax.swing.JFrame {
         cmbSpecialty.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         cmbSpecialty.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one", "General Medicine", "Cardiology", "Pediatrics", "Neurology", "Traumatology & Orthopedics", "Gynecology & Obstetrics", "Dermatology", "Psychiatry", "Oncology", "Ophthalmology", "Internal Medicine" }));
 
-        BtnSave.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        BtnSave.setText("Save");
-        BtnSave.addActionListener(new java.awt.event.ActionListener() {
+        btnSaveDoctorInfo.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        btnSaveDoctorInfo.setText("Save");
+        btnSaveDoctorInfo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                BtnSaveActionPerformed(evt);
+                btnSaveDoctorInfoActionPerformed(evt);
             }
         });
 
@@ -499,7 +500,7 @@ public class DoctorView extends javax.swing.JFrame {
                         .addComponent(lblPasswordConfirmation))
                     .addGroup(pnlModifyInfoLayout.createSequentialGroup()
                         .addGap(576, 576, 576)
-                        .addComponent(BtnSave))
+                        .addComponent(btnSaveDoctorInfo))
                     .addGroup(pnlModifyInfoLayout.createSequentialGroup()
                         .addGap(561, 561, 561)
                         .addComponent(txtPasswordConfirmation, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -535,7 +536,7 @@ public class DoctorView extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(txtPasswordConfirmation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32)
-                .addComponent(BtnSave)
+                .addComponent(btnSaveDoctorInfo)
                 .addContainerGap(161, Short.MAX_VALUE))
         );
 
@@ -561,9 +562,9 @@ public class DoctorView extends javax.swing.JFrame {
             }
         });
 
-        jLabel15.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jLabel15.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel15.setText("Reschedule medical appointment");
+        lblRescheduleAppointmentTitle.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        lblRescheduleAppointmentTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblRescheduleAppointmentTitle.setText("Reschedule medical appointment");
 
         lblAppointmentReschedule.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         lblAppointmentReschedule.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -739,7 +740,7 @@ public class DoctorView extends javax.swing.JFrame {
                         .addComponent(lblAccept)
                         .addGap(22, 22, 22)))
                 .addGroup(pnlRequestLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblRescheduleAppointmentTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(pnlRequestLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(lblAppointmentReschedule, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 305, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblNewAppointment, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -907,7 +908,7 @@ public class DoctorView extends javax.swing.JFrame {
                                 .addComponent(btnAccept))
                             .addGroup(pnlRequestLayout.createSequentialGroup()
                                 .addGap(19, 19, 19)
-                                .addComponent(jLabel15)
+                                .addComponent(lblRescheduleAppointmentTitle)
                                 .addGap(18, 18, 18)
                                 .addComponent(lblAppointmentReschedule)
                                 .addGap(18, 18, 18)
@@ -1170,7 +1171,7 @@ public class DoctorView extends javax.swing.JFrame {
         loadDoctorAppointments(true);
     }//GEN-LAST:event_rdbPendingAppointmentsActionPerformed
 
-    private void BtnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSaveActionPerformed
+    private void btnSaveDoctorInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveDoctorInfoActionPerformed
         DoctorUpdateDTO dto = new DoctorUpdateDTO(
                 doctor.getId(),
                 txtFirstname.getText(),
@@ -1188,7 +1189,7 @@ public class DoctorView extends javax.swing.JFrame {
             clearDoctorForm();
             loadDoctorInfo();
         }
-    }//GEN-LAST:event_BtnSaveActionPerformed
+    }//GEN-LAST:event_btnSaveDoctorInfoActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
         navigationController.openLogin(this);
@@ -1210,26 +1211,29 @@ public class DoctorView extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnGenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerateActionPerformed
+        if (rdbRequests.isSelected()) {
+            Response response = hospctrl.approveHospitalization(cmbRequests.getItemAt(cmbRequests.getSelectedIndex()));
+            JOptionPane.showMessageDialog(null, response.getMessage());
+            if (response.isSuccess()) {
+                clearHospitalizationForm();
+                loadHospitalizationIds();
+            }
+            return;
+        }
         if (!rdbPatientID.isSelected() || hospctrl == null) {
             JOptionPane.showMessageDialog(null, "Please select a patient request");
             return;
         }
 
         String patientId = extractComboId(cmbPatientID.getItemAt(cmbPatientID.getSelectedIndex()));
-        CreateHospitalizationDTO dto;
-        try {
-            dto = new CreateHospitalizationDTO(
-                    Long.parseLong(patientId),
-                    String.valueOf(doctor.getId()),
-                    txtDateEntry.getText(),
-                    txtReasonHospitalization.getText(),
-                    RoomType.IMC.name(),
-                    txtObservationsHospitalization.getText()
-            );
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(null, "Please select a patient");
-            return;
-        }
+        CreateHospitalizationDTO dto = new CreateHospitalizationDTO(
+                patientId,
+                String.valueOf(doctor.getId()),
+                txtDateEntry.getText(),
+                txtReasonHospitalization.getText(),
+                RoomType.IMC.name(),
+                txtObservationsHospitalization.getText()
+        );
         Response response = hospctrl.createHospitalization(dto);
         JOptionPane.showMessageDialog(null, response.getMessage());
         if (response.isSuccess()) {
@@ -1245,12 +1249,13 @@ public class DoctorView extends javax.swing.JFrame {
         String patientId = extractComboId(cmbPatient.getItemAt(cmbPatient.getSelectedIndex()));
         DefaultTableModel model = (DefaultTableModel) tblPatientInfo.getModel();
         model.setRowCount(0);
-        try {
-            for (AppointmentTableDTO appointment : appctrl.getPatientAppointments(Long.parseLong(patientId))) {
+        Response response = appctrl.getPatientAppointments(patientId);
+        JOptionPane.showMessageDialog(null, response.getMessage());
+        if (response.isSuccess()) {
+            for (Object item : (List<?>) response.getData().get("appointments")) {
+                AppointmentTableDTO appointment = (AppointmentTableDTO) item;
                 model.addRow(new Object[]{appointment.id, appointment.datetime, appointment.doctorName, appointment.specialty, appointment.type, appointment.status});
             }
-        } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(null, "Please select a patient");
         }
     }//GEN-LAST:event_btnSearchActionPerformed
 
@@ -1334,6 +1339,22 @@ public class DoctorView extends javax.swing.JFrame {
         loadAppointmentIds();
         loadHospitalizationIds();
         loadDoctorAppointments(false);
+    }
+
+    private void registerObservers() {
+        if (context == null) {
+            return;
+        }
+        context.getStorage().addModelChangeListener(modelName -> {
+            if ("appointments".equals(modelName) || "hospitalizations".equals(modelName) || "users".equals(modelName)) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    loadPatientCombos();
+                    loadAppointmentIds();
+                    loadHospitalizationIds();
+                    loadDoctorAppointments(rdbPendingAppointments.isSelected());
+                });
+            }
+        });
     }
 
     private void loadDoctorInfo() {
@@ -1484,7 +1505,7 @@ public class DoctorView extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton BtnSave;
+    private javax.swing.JButton btnSaveDoctorInfo;
     private javax.swing.JButton btnAccept;
     private javax.swing.JButton btnAcceptReschedule;
     private javax.swing.JButton btnAdd;
@@ -1504,7 +1525,7 @@ public class DoctorView extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cmbPatientID;
     private javax.swing.JComboBox<String> cmbRequests;
     private javax.swing.JComboBox<String> cmbSpecialty;
-    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel lblRescheduleAppointmentTitle;
     private javax.swing.JLabel lblAccept;
     private javax.swing.JLabel lblAdditionalInstructions;
     private javax.swing.JLabel lblAdminRoute;

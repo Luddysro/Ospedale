@@ -6,6 +6,7 @@ package Ospedale.Controller;
 
 import Ospedale.Controller.Utils.Response;
 import Ospedale.Controller.Utils.Status;
+import Ospedale.DTO.PatientCreateDTO;
 import Ospedale.DTO.PatientUpdateDTO;
 import Ospedale.Services.PatientService;
 
@@ -17,12 +18,23 @@ public class PatientController {
         this.patientService = patientService;
     }
 
+    public Response createPatient(PatientCreateDTO dto) {
+        try {
+            patientService.createPatient(dto);
+            return new Response("Patient created", Status.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new Response(e.getMessage(), Status.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new Response(e.getMessage(), Status.NOT_FOUND);
+        }
+    }
+
     public Response updatePatient(PatientUpdateDTO dto) {
         try {
             patientService.updatePatient(dto);
             return new Response("Patient updated", Status.OK);
         } catch (IllegalArgumentException e) {
-            return new Response("Passwords don't match", Status.BAD_REQUEST);
+            return new Response(e.getMessage(), Status.BAD_REQUEST);
         } catch (RuntimeException e) {
             return new Response(e.getMessage(), Status.NOT_FOUND);
         }

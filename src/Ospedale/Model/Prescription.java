@@ -1,5 +1,6 @@
 package Ospedale.Model;
 
+import Ospedale.Model.Appointment.Appointment;
 import java.util.HashMap;
 
 /**

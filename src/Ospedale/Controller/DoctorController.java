@@ -11,8 +11,10 @@ import Ospedale.DTO.DoctorCreateDTO;
 import Ospedale.DTO.DoctorListDTO;
 import Ospedale.DTO.DoctorUpdateDTO;
 import Ospedale.DTO.UserOptionDTO;
+import Ospedale.Model.User.Administrator;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
+import Ospedale.Model.User.User;
 import Ospedale.Services.DoctorService;
 import Data.UserRepository;
 import java.util.ArrayList;
@@ -35,6 +37,13 @@ public class DoctorController {
     }
 
     public Response createDoctor(DoctorCreateDTO dto) {
+        return new Response("Administrator privileges required", Status.BAD_REQUEST);
+    }
+
+    public Response createDoctor(DoctorCreateDTO dto, User currentUser) {
+        if (!(currentUser instanceof Administrator)) {
+            return new Response("Administrator privileges required", Status.BAD_REQUEST);
+        }
         try {
             doctorService.createDoctor(dto);
             return new Response("Doctor created", Status.CREATED);
@@ -45,9 +54,6 @@ public class DoctorController {
         }
     }
 
-    public List<Doctor> getDoctors() {
-        return doctorService.getDoctors();
-    }
      public List<String> getDoctorNames() {
         List<String> names = new ArrayList<>();
         for (DoctorListDTO doctor : getDoctorList()) {
@@ -71,7 +77,8 @@ public class DoctorController {
                 return new Response("Doctor not found", Status.NOT_FOUND);
             }
             java.util.HashMap<String, Object> data = new java.util.HashMap<>();
-            data.put("doctor", doctor);
+            data.put("doctor", doctor.serialize());
+            data.put("doctorId", doctor.getId());
             return new Response("Doctor loaded", Status.OK, data);
         } catch (IllegalArgumentException e) {
             return new Response(e.getMessage(), Status.BAD_REQUEST);
@@ -85,7 +92,8 @@ public class DoctorController {
                 return new Response("Patient not found", Status.NOT_FOUND);
             }
             java.util.HashMap<String, Object> data = new java.util.HashMap<>();
-            data.put("patient", patient);
+            data.put("patient", patient.serialize());
+            data.put("patientId", patient.getId());
             return new Response("Patient loaded", Status.OK, data);
         } catch (IllegalArgumentException e) {
             return new Response(e.getMessage(), Status.BAD_REQUEST);

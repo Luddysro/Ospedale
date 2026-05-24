@@ -9,8 +9,8 @@ import Ospedale.Controller.Utils.Response;
 import Ospedale.Controller.Utils.Status;
 import Ospedale.DTO.AppointmentCreateDTO;
 import Ospedale.DTO.AppointmentTableDTO;
-import Ospedale.Model.Appointment;
-import Ospedale.Model.AppointmentStatus;
+import Ospedale.Model.Appointment.Appointment;
+import Ospedale.Model.Appointment.AppointmentStatus;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.User;
@@ -48,6 +48,8 @@ public class AppointmentController {
     try {
         appointmentService.cancelAppointment(idAppointment);
         return new Response("Appointment canceled successfully", Status.OK);
+    } catch (IllegalArgumentException e) {
+        return new Response(e.getMessage(), Status.BAD_REQUEST);
     } catch (RuntimeException e) {
         return new Response(e.getMessage(), Status.NOT_FOUND);
     }
@@ -55,6 +57,16 @@ public class AppointmentController {
 
    public List<AppointmentTableDTO> getPatientAppointments(long patientId) {
         return appointmentService.getAppointmentsByPatient(patientId);
+    }
+
+   public Response getPatientAppointments(String patientId) {
+        try {
+            java.util.HashMap<String, Object> data = new java.util.HashMap<>();
+            data.put("appointments", appointmentService.getAppointmentsByPatient(Long.parseLong(patientId)));
+            return new Response("Appointments loaded", Status.OK, data);
+        } catch (RuntimeException e) {
+            return new Response("Invalid patient", Status.BAD_REQUEST);
+        }
     }
 
    public List<AppointmentTableDTO> getDoctorAppointments(long doctorId) {
@@ -69,6 +81,8 @@ public class AppointmentController {
         try {
             appointmentService.acceptAppointment(idAppointment);
             return new Response("Appointment accepted", Status.OK);
+        } catch (IllegalArgumentException e) {
+            return new Response(e.getMessage(), Status.BAD_REQUEST);
         } catch (RuntimeException e) {
             return new Response(e.getMessage(), Status.NOT_FOUND);
         }
@@ -79,6 +93,8 @@ public class AppointmentController {
         try {
             appointmentService.completeAppointment(idAppointment, diagnosis, observations, recommendedTreatment, followUp);
             return new Response("Appointment completed", Status.OK);
+        } catch (IllegalArgumentException e) {
+            return new Response(e.getMessage(), Status.BAD_REQUEST);
         } catch (RuntimeException e) {
             return new Response(e.getMessage(), Status.NOT_FOUND);
         }

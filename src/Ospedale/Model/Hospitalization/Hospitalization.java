@@ -2,9 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Ospedale.Model;
+package Ospedale.Model.Hospitalization;
 
 import Ospedale.Model.RoomType;
+import Ospedale.Model.RoomType;
+import Ospedale.Model.Serializable;
 import Ospedale.Model.User.Patient;
 import Ospedale.Model.User.Doctor;
 import java.time.LocalDate;

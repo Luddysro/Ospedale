@@ -4,8 +4,8 @@
  */
 package Ospedale.Model.User;
 
-import Ospedale.Model.Hospitalization;
-import Ospedale.Model.Appointment;
+import Ospedale.Model.Hospitalization.Hospitalization;
+import Ospedale.Model.Appointment.Appointment;
 import Ospedale.Model.User.User;
 import Ospedale.Model.Specialty;
 import java.util.ArrayList;

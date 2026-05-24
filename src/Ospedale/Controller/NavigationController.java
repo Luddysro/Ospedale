@@ -8,6 +8,7 @@ import Ospedale.AppContext;
 import Ospedale.Model.User.User;
 import Ospedale.Model.User.Doctor;
 import Ospedale.Model.User.Administrator;
+import Ospedale.Model.User.Patient;
 import Ospedale.View.AdminView;
 import Ospedale.View.BaseView;
 import Ospedale.View.DoctorView;
@@ -85,7 +86,47 @@ public class NavigationController {
         login.setVisible(true);
     }
 
+    public void openViewForUserId(JFrame current, long userId) {
+        User resolvedUser = findUser(userId);
+        if (resolvedUser instanceof Administrator) {
+            this.user = resolvedUser;
+            openAdminView(current);
+        } else if (resolvedUser instanceof Patient) {
+            this.user = resolvedUser;
+            openPatientView(current, resolvedUser);
+        } else if (resolvedUser instanceof Doctor) {
+            this.user = resolvedUser;
+            openDoctorView(current, (Doctor) resolvedUser);
+        }
+    }
+
+    public void openDoctorViewById(JFrame current, long doctorId) {
+        User resolvedDoctor = findUser(doctorId);
+        if (resolvedDoctor instanceof Doctor) {
+            openDoctorView(current, (Doctor) resolvedDoctor);
+        }
+    }
+
+    public void openPatientViewById(JFrame current, long patientId) {
+        User resolvedPatient = findUser(patientId);
+        if (resolvedPatient instanceof Patient) {
+            openPatientView(current, resolvedPatient);
+        }
+    }
+
     public boolean canReturnToAdmin() {
         return user instanceof Administrator;
+    }
+
+    private User findUser(long userId) {
+        if (context == null) {
+            return user;
+        }
+        for (User currentUser : context.getStorage().getUsers()) {
+            if (currentUser.getId() == userId) {
+                return currentUser;
+            }
+        }
+        return null;
     }
 }

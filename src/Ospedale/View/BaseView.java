@@ -5,12 +5,7 @@ import Ospedale.AppContext;
 import Ospedale.Controller.NavigationController;
 import Ospedale.Controller.Utils.Response;
 import Ospedale.DTO.LoginDTO;
-import Ospedale.Model.User.Administrator;
-import Ospedale.Model.User.Doctor;
-import Ospedale.Model.User.Patient;
-import Ospedale.Model.User.User;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -95,19 +90,8 @@ public class BaseView extends javax.swing.JFrame {
             return;
         }
 
-        User user = (User) response.getData().get("user");
-        openViewFor(user);
-    }
-
-    private void openViewFor(User user) {
-        NavigationController nav = new NavigationController(user, context);
-
-        if (user instanceof Administrator) {
-            nav.openAdminView(this);
-        } else if (user instanceof Patient) {
-            nav.openPatientView(this, user);
-        } else if (user instanceof Doctor) {
-            nav.openDoctorView(this, (Doctor) user);
-        }
+        long userId = ((Number) response.getData().get("userId")).longValue();
+        NavigationController nav = new NavigationController(null, context);
+        nav.openViewForUserId(this, userId);
     }
 }

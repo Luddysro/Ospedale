@@ -9,7 +9,7 @@ package Ospedale.DTO;
  * @author luddy
  */
 public class CreateHospitalizationDTO {
-    private long patientId;
+    private String patientId;
     private String doctorId;
     private String estimatedAdmission;
     private String reason;
@@ -17,6 +17,15 @@ public class CreateHospitalizationDTO {
     private String observations;
 
     public CreateHospitalizationDTO(long patientId,
+                                    String doctorId,
+                                    String estimatedAdmission,
+                                    String reason,
+                                    String roomType,
+                                    String observations) {
+        this(String.valueOf(patientId), doctorId, estimatedAdmission, reason, roomType, observations);
+    }
+
+    public CreateHospitalizationDTO(String patientId,
                                     String doctorId,
                                     String estimatedAdmission,
                                     String reason,
@@ -30,7 +39,7 @@ public class CreateHospitalizationDTO {
         this.observations = observations;
     }
 
-    public long getPatientId() {
+    public String getPatientId() {
         return patientId;
     }
 

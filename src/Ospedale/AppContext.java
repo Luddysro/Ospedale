@@ -1,6 +1,7 @@
 package Ospedale;
 
 import Data.AppointmentRepo;
+import Data.HospitalizationRepository;
 import Data.Storage;
 import Data.UserRepository;
 import Ospedale.Controller.AppointmentController;
@@ -10,6 +11,7 @@ import Ospedale.Controller.LoginController;
 import Ospedale.Controller.PatientController;
 import Ospedale.Services.AppointmentService;
 import Ospedale.Services.DoctorService;
+import Ospedale.Services.HospitalizationService;
 import Ospedale.Services.LoginService;
 import Ospedale.Services.PatientService;
 
@@ -27,13 +29,15 @@ public class AppContext {
 
         UserRepository userRepository = new UserRepository(storage);
         AppointmentRepo appointmentRepo = new AppointmentRepo(storage);
+        HospitalizationRepository hospitalizationRepository = new HospitalizationRepository(storage);
         AppointmentService appointmentService = new AppointmentService(appointmentRepo, userRepository);
+        HospitalizationService hospitalizationService = new HospitalizationService(hospitalizationRepository, userRepository, appointmentRepo);
         PatientService patientService = new PatientService(userRepository);
         DoctorService doctorService = new DoctorService(userRepository);
         LoginService loginService = new LoginService(userRepository);
         this.loginController = new LoginController(loginService);
         this.appointmentController = new AppointmentController(appointmentService);
-        this.hospitalizationController = new HospitalizationController(storage);
+        this.hospitalizationController = new HospitalizationController(hospitalizationService);
         this.patientController = new PatientController(patientService);
         this.doctorController = new DoctorController(doctorService);
     }

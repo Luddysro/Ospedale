@@ -5,6 +5,7 @@
 package Ospedale.Services;
 
 import Data.UserRepository;
+import Ospedale.DTO.PatientCreateDTO;
 import Ospedale.DTO.PatientUpdateDTO;
 import Ospedale.Model.User.Patient;
 import java.time.LocalDate;
@@ -21,6 +22,33 @@ public class PatientService {
         this.userRepo = userRepo;
     }
 
+    public Patient createPatient(PatientCreateDTO dto) {
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords don't match");
+        }
+        long id = parseUserId(dto.getId(), "Invalid patient id");
+        if (userRepo.findById(id) != null) {
+            throw new IllegalArgumentException("User id already exists");
+        }
+        validateUniqueUsername(dto.getUsername(), id);
+        validateEmail(dto.getEmail());
+
+        Patient patient = new Patient(
+                id,
+                dto.getUsername(),
+                dto.getFirstname(),
+                dto.getLastname(),
+                dto.getPassword(),
+                dto.getEmail(),
+                parseDate(dto.getBirthdate()),
+                parseGender(dto.getGender()),
+                parsePhone(dto.getPhone()),
+                dto.getAddress()
+        );
+        userRepo.save(patient);
+        return patient;
+    }
+
     public Patient updatePatient(PatientUpdateDTO dto) {
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
             throw new IllegalArgumentException("Passwords don't match");
@@ -31,6 +59,8 @@ public class PatientService {
         if (patient == null) {
             throw new RuntimeException("Patient not found");
         }
+        validateUniqueUsername(dto.getUsername(), dto.getId());
+        validateEmail(dto.getEmail());
 
         patient.setFirstname(dto.getFirstname());
         patient.setLastname(dto.getLastname());
@@ -40,7 +70,10 @@ public class PatientService {
         patient.setPhone(parsePhone(dto.getPhone()));
         patient.setEmail(dto.getEmail());
         patient.setUsername(dto.getUsername());
-        patient.setPassword(dto.getPassword());
+        if (!dto.getPassword().isEmpty()) {
+            patient.setPassword(dto.getPassword());
+        }
+        userRepo.update(patient);
 
         return patient;
     }
@@ -66,10 +99,43 @@ public class PatientService {
     }
 
     private long parsePhone(String value) {
+        if (value == null || !value.matches("\\d{10}")) {
+            throw new IllegalArgumentException("Invalid phone");
+        }
         try {
             return Long.parseLong(value);
         } catch (RuntimeException e) {
             throw new IllegalArgumentException("Invalid phone");
+        }
+    }
+
+    private long parseUserId(String value, String message) {
+        if (value == null || !value.matches("\\d{12}")) {
+            throw new IllegalArgumentException(message);
+        }
+        try {
+            long id = Long.parseLong(value);
+            if (id <= 0) {
+                throw new IllegalArgumentException(message);
+            }
+            return id;
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private void validateEmail(String email) {
+        if (email == null || !email.matches("^[^@\\s]+@[^@\\s]+\\.com$")) {
+            throw new IllegalArgumentException("Invalid email");
+        }
+    }
+
+    private void validateUniqueUsername(String username, long currentUserId) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid username");
+        }
+        if (userRepo.existsUsernameForAnotherUser(username, currentUserId)) {
+            throw new IllegalArgumentException("Username already exists");
         }
     }
 }

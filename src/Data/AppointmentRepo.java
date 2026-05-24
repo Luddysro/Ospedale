@@ -4,7 +4,7 @@
  */
 package Data;
 import Ospedale.DTO.AppointmentTableDTO;
-import Ospedale.Model.Appointment;
+import Ospedale.Model.Appointment.Appointment;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +22,11 @@ public class AppointmentRepo {
 
     public void save(Appointment a) {
         storage.getAppointments().add(a);
+        storage.notifyModelChanged("appointments");
+    }
+
+    public void update(Appointment a) {
+        storage.notifyModelChanged("appointments");
     }
 
 public List<Appointment> findByPatientId(long id) {
